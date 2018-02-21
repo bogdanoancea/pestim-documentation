@@ -120,7 +120,20 @@ The main idea of the model is to emulate the ecological sampling setting in whic
 the number of detected individuals in each cell follows a binomial distribution $Bin(N_{i}, p_{i})$ 
 whose parameter $N_{i}$ is the target of the model and is assigned a weakly informative prior 
 and the detection probability $p_{i}$ is also assigned a weakly informative prior based 
-upon both data sources. In our case, if we have $N_{i}$ individuals in cell $i$ and we have an independent detection probability $p_{i}$ for each individual through the mobile telecommunication network, then we will detect $N_{i}^{\textrm{MNO}}$ individuals according to the aggregated mobile phone data naturally following a binomial distribution. $N_{i}$  can be modeled as Poisson random variables with independent parameters $\lambda_{i}$, variables which are pairwise independent, while $p_{i}$ are the proportions of individuals detected by the MNO at time $t_{0}$ in each cell $i$. It is importnt to note here that $p_{i}$ is not simply the market share of the MNO in cell $i$ but the actual proportion of individuals detected by the network. As an illustrative example, a call between a subscriber in a cell $i$ and a non-subscriber in another cell $j$ of a given MNO is certainly detected by the network in \emph{\textbf{both cells}}, thus potentially being part of the aggregated data $N_{i}^{\textrm{MNO}}$ and $N_{j}^{\textrm{MNO}}$. This example emphasizes the importance  of the knowledge of the preprocessing and aggregation procedures from microdata for the final result.
+upon both data sources. In our case, if we have $N_{i}$ individuals in cell $i$ and 
+we have an independent detection probability $p_{i}$ for each individual through 
+the mobile telecommunication network, then we will detect $N_{i}^{\textrm{MNO}}$ 
+individuals according to the aggregated mobile phone data naturally following a binomial 
+distribution. $N_{i}$  can be modeled as Poisson random variables with independent 
+parameters $\lambda_{i}$, variables which are pairwise independent, while $p_{i}$ are 
+the proportions of individuals detected by the MNO at time $t_{0}$ in each cell $i$. 
+It is importnt to note here that $p_{i}$ is not simply the market share of the MNO in 
+cell $i$ but the actual proportion of individuals detected by the network. As an 
+example, a call between a subscriber in a cell $i$ and a non-subscriber in another 
+cell $j$ of a given MNO is certainly detected by the network in \emph{\textbf{both cells}}, 
+thus potentially being part of the aggregated data $N_{i}^{\textrm{MNO}}$ and $N_{j}^{\textrm{MNO}}$. 
+This example emphasizes the importance  of the knowledge of the preprocessing and aggregation 
+procedures from microdata for the final result.
 
 
 Thus, the model can be summarized as follows:
