@@ -8,79 +8,119 @@
 
 
 \title{pestim - an R package to estimate population counts from aggregated mobile phone data}
-\author{David Salgado \footnote{Deptartment of Methodology and Development of Statistical Production. Statistics Spain (INE)} and 
+\author{David Salgado \footnote{Department of Methodology and Development of Statistical Production. Statistics Spain (INE)} and 
  who else to add as author??}
+
 \date{}
 
-
-\newtheorem{lemma}{Lemma}
-\newcommand{\appropto}{\mathrel{\vcenter{
-  \offinterlineskip\halign{\hfil$##$\cr
-    \propto\cr\noalign{\kern2pt}\sim\cr\noalign{\kern-2pt}}}}}
 
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Two of the most used measures for inequality in the study of income and
-wealth distributions are the Gini ($G$) and Theil ($T$) indices. 
-While there is a vast literature on the bounds of these two measures given
-partial information about the income distribution, 
-the relationship between them has been less studied.
-In this paper we investigate whether there is a lower and upper bound for 
-the $T$ index at a given value of the $G$ index, 
-for both continuous and discrete distributions. We derive a theoretical 
-lower bound for $T$ at given $G$, and show that
-there is no corresponding upper bound, and $T$ can be made as large as desired 
-by choosing an appropriate form of the Lorenz curve. We illustrate the bound
-for several parametric models of income distribution and Lorenz curves 
-frequently used in the income inequality literature.
-
- 
-	
+This package has been developed in the context of a European research project 
+within the European Statistical System called ESSnet on Big Data.
+It provides an implementation for a hierarchical model to combine both 
+aggregated mobile phone data and external official (administrative or survey) 
+data to produce estimates of population counts in each cell of a division of a territory.
 \end{abstract}
 
 
 \section{Introduction}
 
-{\textit{pestim}} R package implements a hierarchical model to estimate the population counts of different territorial cells combining the information from aggregated 
+{\textit{pestim}} R package implements a hierarchical model to estimate the population counts of different territorial cells 
+combining the information from aggregated 
 mobile phone data and a population register or survey data, both at a given time instant and along a 
 sequence of time periods. The theoretical model implemented by the {\textit{pestim}} R package
 follows the ecological sampling techniques to estimate population counts (see e.g. \cite{ManNacAlb15a} and 
-\cite {RoyDor08a} which are based on a bayesian approach. The complete methodology is described in \cite{methdology}.
-
-The inference of the population counts from mobile phone data and official data is acheived in a two step process:
+\cite{RoyDor08a}) which are based on a bayesian approach. The complete methodology is described in \cite{methodology}.
+The proposed model rests on two working assumptions:
 \begin{itemize}
-\item{at a given time instant $t{0}$ both mobile phone and 
+	\item Given that mobile phone data and official data operate at different 
+time scales, we assume that there exists an initial time instant 
+in which we can equate population figures from both sources.
+	\item The mobility patterns of individuals do not depend on the mobile 
+network operator which they are subscribed to.
+\end{itemize}
+
+The inference of the population counts from mobile phone data and official data is achieved in a two step process:
+\begin{itemize}
+	\item {at a given time instant $t_{0}$ both mobile phone and 
 official data are used to infer the population counts in each territorial cell;}
-\item{at later moments, $t_{1}, t_{2}, \...$ the transition probabilities are inferred from mobile phone data and are used to estimate the spatial and time evolution of the population.}
+	\item {at later moments, $t_{1}, t_{2},...$ the transition probabilities are inferred from mobile phone 
+	data and are used to estimate the spatial and time evolution of the population.}
 \end{itemize}
 
 
-
+The package is structured on three layers of functions:
+\begin{itemize}
+	\item \textbf{Auxiliary functions}, providing computation of mathematical functions 
+such as the ratio of two beta functions, the confluent hypergeometric function, 
+an optimization routine for a concrete probability distribution, etc. 
+Examples of these functions are \textit{ratioBeta}, \textit{kummer}, \textit{Phi}, \textit{modeLambda};
+	\item \textbf{Distribution-relation functions}, providing computation regarding 
+the generation of random deviates according to different probability distributions 
+comprising both priors, posteriors, and the generation of parameter specifications 
+for these distributions. Examples of these functions are 
+\textit{dtriang, rtriang, ptriang, qtriang, dlambda, rlambda, rmatProb, rN0, rNt, rNtcondN0, rg, rp, alphaPrior, genAlpha, genUV}.
+\item \textbf{Estimation-relation functions}, providing computation of estimates 
+based upon the populations generated with the preceding functions. 
+Examples of these functions are \textit{postN0, postNt, postNtcondN0}.
+\end{itemize}
 
 \section{The hierarchical model}\label{model}
 
-In this section we will give a short description of the theoretical model underlaying the {\textit{pestim}} R package for estimation of the population counts at a given time moment.
+In this section we will give a short description of the theoretical model 
+underlaying the \textit{pestim} R package for estimation of the population 
+counts at a given time moment.
 
-A first input in the model is $\mathbf{N}^{\textrm{MNO}}=(N_{1}^{\textrm{MNO}}, \dots, N_{I}^{\textrm{MNO}})^{T}$ which represents the population counts reported by the mobile network operator in each territorial cell $i\in\mathcal{I}=\{1,\dots,I\}$ (i.e. the aggregated mobile phone data).  The second input of the model is the official population counts in each territorial cell denoted by 
-$\mathbf{N}^{\textrm{REG}}=(N_{1}^{\textrm{REG}}, \dots, N_{I}^{\textrm{REG}})^{T}$. These official population counts could come from administrative data sources or from statistical surveys.
- {\textit{pestim}} implements a function to estimate the actual population counts $\mathbf{N}=(N_{1}, \dots, N_{I})^{T}$ combining both data sources. It also compute the posterior probability distribution 
+A first input in the model is 
+$\mathbf{N}^{\textrm{MNO}}=(N_{1}^{\textrm{MNO}}, \dots, N_{I}^{\textrm{MNO}})^{T}$ which 
+represents the population counts reported by the mobile network operator in 
+each territorial cell $i\in\mathcal{I}=\{1,\dots,I\}$ (i.e. the aggregated mobile phone data). 
+The second input of the model is the official population counts in each territorial cell denoted by 
+$\mathbf{N}^{\textrm{REG}}=(N_{1}^{\textrm{REG}}, \dots, N_{I}^{\textrm{REG}})^{T}$. 
+These official population counts could come from administrative data sources or from statistical surveys.
+{\textit{pestim}} implements a function to estimate the actual population 
+counts $\mathbf{N}=(N_{1}, \dots, N_{I})^{T}$ combining both data sources. 
+It also computes the posterior probability distribution 
 $\mathbb{P}\left(\mathbf{N}|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textrm{REG}}\right)$ 
 that can be used to assess the uncertainty in the output estimates.
-This process can be represented schematically as follows.
+This process can be represented schematically as shown in figure \ref{Tool}.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{Tool.png}
-\caption{\label{Tool} A diagram for the process of estimating population counts using mobile phone and official population data.}
+\begin{figure}\label{Tool}
+\begin{center}
+\includegraphics[width=1\textwidth,natwidth=1411,natheight=301]{Tool.png}
+\caption{A diagram for the process of estimating population counts using mobile phone and official population data.}
+\end{center}
 \end{figure}
 
+
+The main idea of the model is to emulate the ecological sampling setting in which 
+the number of detected individuals in each cell follows a binomial distribution $Bin(N_{i}, p_{i})$ 
+whose parameter $N_{i}$ is the target of the model and is assigned a weakly informative prior 
+and the detection probability $p_{i}$ is also assigned a weakly informative prior based 
+upon both data sources.
+
+Thus, the model can be summarized as follows:
+
+\begin{align}
+N_{i}^{\textrm{MNO}}&\simeq\textrm{Bin}\left(N_{i}, p_{i}\right),\qquad N_{i}^{\textrm{MNO}}\perp N_{j}^{\textrm{MNO}},\quad i\neq j=1,\dots,I\\
+N_{i}&\simeq\textrm{Po}\left(\lambda_{i}\right),\qquad N_{i}\perp N_{j},\quad i\neq j=1,\dots,I\nonumber\\
+p_{i}&\simeq\textrm{Beta}\left(\alpha_{i},\beta_{i}\right),\qquad p_{i}\perp p_{j}\quad i\neq j=1,\dots,I\nonumber\\
+\left(\alpha_{i}, \beta_{i}\right)&\simeq \frac{f_{1}(\frac{\alpha_{i}}{\alpha_{i}+\beta_{i}}; \mathbf{N}^{\textrm{REG}}, \mathbf{z})\cdot f_{2}(\alpha_{i}+\beta_{i}; \mathbf{N}^{\textrm{REG}}, \mathbf{z})}{\alpha_{i}+\beta_{i}},\qquad (\alpha_{i},\beta_{i})\perp(\alpha_{j},\beta_{j}),\quad i\neq j=1,\dots,I\nonumber\\
+\lambda_{i}&\simeq f_{3}(\lambda_{i}; N_{i}^{\textrm{REG}}, \mathbf{z})\quad (\lambda_{i} > 0, \lambda_{i}\perp\lambda_{j}), \quad i=1,\dots,I.\nonumber
+\end{align}
 
 
 
 \begin{thebibliography}{99}
+
+\bibitem{methodology}
+~Deptartment of Methodology and Development of Statistical Production, Statistics Spain (INE), 
+A hierarchical model to estimate population counts from
+aggregated mobile phone data, January, 2018.
 
 \bibitem{ManNacAlb15a}
 ~Manly, B.F.J., ~ Navarro Alberto, J.A., Introduction to ecological sampling,
@@ -97,16 +137,13 @@ Academic Press, 2008.
 ~Flajolet, P., ~Sedgewick, R.,  Mellin transforms and asymptotics; Finite differences and Rice's integrals,
 in  Theoretical Computer Science 144, pp. 101-124, 1995.
 
-
 \bibitem{GraKnuPat96a}
 Graham, R.L., ~Knuth, D.E., ~Patashnik, O., Concrete Mathematics (2nd ed.), 
 Addison-Wesley, 1996.
 
-
 \bibitem{Joh02a}
 ~Johnson, W.P., The curious history of Faà di Bruno's formula, in 
 American Mathematical Monthly 109, pp. 217-234, March, 2002.
-
 
 \bibitem{BroChu03a}
 ~Brown, J.W., ~Churchill, R.V., Complex variables and applications (7th ed.), 2003.
@@ -128,6 +165,5 @@ presented at Q2016 Conference, June, 2016.
 ~ESSnet on Big Data WP5, Current status of access to mobile phone data in the ESS, 2017.
  
 \end{thebibliography}
-
 
 \end{document}
