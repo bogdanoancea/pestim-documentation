@@ -15,6 +15,10 @@
 	bottom=25mm
 }
 
+
+
+
+
 \title{pestim - an R package to estimate population counts from aggregated mobile phone data}
 \author{David Salgado\footnote{Department of Methodology and Development of Statistical Production, Statistics Spain (INE)}  and who else to add as author??}
 
@@ -108,9 +112,10 @@ that can be used to assess the uncertainty in the output estimates.
 This process can be represented schematically as shown in figure \ref{Tool}.
 
 \begin{figure}
-\makebox[\textwidth][c]{\includegraphics[width=0.7\textwidth]{Tool.png}}%
-%%\centering
-%%\includegraphics[width=1 \textwidth, natwidth=454, natheight=97]{Tool.png}
+\centering
+\makebox[\textwidth][c]{\includegraphics[width=1\textwidth, natwidth=600, natheight=127, width=12cm, height=3cm]{Tool.png}}%
+%\hbox{\includegraphics [width=10cm, height=3cm, natwidth=600, natheight=127] {Tool.png}} 
+%\includegraphics[width=0.7\textwidth, natwidth=300, natheight=70]{Tool.png}
 \caption{A diagram for the process of estimating population counts using mobile phone and official population data.}
 \label{Tool}
 \end{figure}
@@ -127,7 +132,7 @@ individuals according to the aggregated mobile phone data naturally following a 
 distribution. $N_{i}$  can be modeled as Poisson random variables with independent 
 parameters $\lambda_{i}$, variables which are pairwise independent, while $p_{i}$ are 
 the proportions of individuals detected by the MNO at time $t_{0}$ in each cell $i$. 
-It is importnt to note here that $p_{i}$ is not simply the market share of the MNO in 
+It is important to note here that $p_{i}$ is not simply the market share of the MNO in 
 cell $i$ but the actual proportion of individuals detected by the network. As an 
 example, a call between a subscriber in a cell $i$ and a non-subscriber in another 
 cell $j$ of a given MNO is certainly detected by the network in \emph{\textbf{both cells}}, 
@@ -135,6 +140,26 @@ thus potentially being part of the aggregated data $N_{i}^{\textrm{MNO}}$ and $N
 This example emphasizes the importance  of the knowledge of the preprocessing and aggregation 
 procedures from microdata for the final result.
 
+The detection probabilities $p_{i}$ are modeled as $Beta$ distributed independently 
+random variables with $\alpha_{i}$ and $\beta_{i}$ parameters in each cell. The prior 
+distribution of the parameters $\alpha_{i}$ and $\beta_{i}$ comes from the following reasoning.
+We assume that $\frac{\alpha_{i}}{\alpha_{i} + \beta_{i}}$ 
+and $\alpha_{i} + \beta_{i}$ are independently distributed according 
+to $\frac{\alpha_{i}}{\alpha_{i} + \beta_{i}}\simeq f_{1}(\frac{\alpha_{i}}{\alpha_{i}+\beta_{i}}; \mathbf{N}^{\textrm{REG}}, \mathbf{z})$   
+and $\alpha_{i} + \beta_{i}\simeq f_{2}(\alpha_{i}+\beta_{i}; \mathbf{N}^{\textrm{REG}}, \mathbf{z})$.
+Here  $f_{1}$ and $f_{2}$ are weakly informative prior distributions for $\frac{\alpha}{\alpha + \beta}$
+and $\alpha + \beta$ and they made use of the information from the population 
+register ($\mathbf{N}^{\textrm{REG}}$) and any other auxiliary information $\mathbf{z}$. 
+The parameters $\alpha_{i}+\beta_{i}$ can be understood as the population size of 
+each cell $N_{i}$ (thus with support in $(0,\infty)$) upon which the detection is executed 
+at that time instant and $\alpha_{i}/(\alpha_{i}+\beta_{i})$ can be understood as a priori proportions 
+of individuals detected by the MNO in cell $i$. 
+If we assume $f_{2}$ to be a gamma distribution with parameters 
+$(N_{i}^{\textrm{MNO}} + 1, \frac{N_{i}^{\textrm{MNO}}}{N_{i}^{\textrm{REG}}})$  the most probable 
+value for the sample size is $N_{i}^{\textrm{REG}}$ which is consistent with the preceding hypothesis for $N_{i}$.
+With no prior information about the detection probability we may assume $f_{1}=\textrm{Unif}[0,1]$.
+the parameters $\lambda_{i}$ are modeled with another weakly information prior $f_{3}$ which may incorporate 
+the information we have from the population register or similar sources.
 
 Thus, the model can be summarized as follows:
 
@@ -147,12 +172,690 @@ p_{i}&\simeq\textrm{Beta}\left(\alpha_{i},\beta_{i}\right),\qquad p_{i}\perp p_{
 \lambda_{i}&\simeq f_{3}(\lambda_{i}; N_{i}^{\textrm{REG}}, \mathbf{z})\quad (\lambda_{i} > 0, \lambda_{i}\perp\lambda_{j}), \quad i=1,\dots,I.\nonumber
 \end{align}
 
+The quantity of interest here is the target population counts $\mathbf{N}=(N_{1},\dots,N_{I})^{T}$ in each cell $i$. We will follow a Bayesian
+approach to compute the posterior distribution of the target population. This approach allows us to 
+to account for the inference and the assessment of the uncertainty, hence of quality of estimations.
+We can leverage the prior information we have at our disposal by choosing the probability distribution $f_{1}$, $f_{2}$ and $f_{3}$. 
+The posterior distribution $\mathbb{P}\left(\mathbf{N}\big|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textbf{REG}}\right)$ is given by (we dropped the subscripts
+since each cell is treated independently of each other) \cite{methodology}:
+
+\begin{align}
+\mathbb{P}\left(N\big|N^{\textrm{MNO}};N^{\textbf{REG}}\right)&\propto 
+\label{PostProbN} \int_{0}^{\infty}d\lambda\quad\mathbb{P}\left(\lambda\big|N^{\textrm{MNO}};N^{\textbf{REG}}\right)\cdot\textrm{Po}(N; \lambda),
+\end{align}
+
+$N$ being a Poisson random variable, the most probable value for $N$ is given by $\lfloor \lambda\rfloor$ and the posterior 
+distribution for the hyperparameter $\lambda$ will allow us to provide a point estimator for $N$ (mode, mean, median, \dots).
+
+The posterior $\mathbb{P}\left(\lambda \big|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textbf{REG}}\right)$ is given by \cite{BDA3} \cite{methodology}:
+
+\begingroup\small
+\begin{align}
+\mathbb{P}\left(\lambda\big|N^{\textrm{MNO}};N^{\textbf{REG}}\right)&\propto \mathbb{P}\left(\lambda\right)\cdot \textrm{Po}(N^{\textrm{MNO}}; \lambda) \cdot S\left(\lambda, N^{\textrm{MNO}}, N^{REG}\right),
+\end{align}
+\endgroup
+
+\noindent where we have defined 
+
+\begingroup\small
+\begin{align}
+S(\lambda, N^{\textrm{MNO}}, N^{\textrm{REG}}) &= \sum_{n = 0}^{\infty}\frac{\lambda^{n}}{n!}I_{N^{\textrm{MNO}}, n}(N^{\textrm{REG}}),\\
+I_{N^{\textrm{MNO}}, n}(N^{\textrm{REG}})&=\int_{0}^{\infty}\int_{0}^{\infty}d\alpha d\beta\ \frac{f_{1}(\frac{\alpha}{\alpha+\beta}; N^{\textrm{REG}})\cdot f_{2}(\alpha+\beta; N^{\textrm{REG}}}{\alpha+\beta}\frac{B\left(\alpha+N^{\textrm{MNO}}, \beta+n- N^{\textrm{MNO}}\right)}{B\left(\alpha, \beta\right)}.
+\end{align}
+\endgroup
+
+In order to compute the integral $I_{N^{\textrm{MNO}}, n}(N^{\textrm{REG}})$ we use 
+a change of variables $u = \frac{\alpha}{\alpha + \beta}, v = \alpha + \beta$. The integral becomes \cite{methodology}:
+
+\begin{align}
+\label{MC}I_{n,m}(N^{\textrm{REG}})&= \int_{0}^{\infty}dv f_{2}(v)\int_{0}^{1}du\ f_{1}(u)\frac{B(u\cdot v + n, (1-u)\cdot v + m)}{B(u\cdot v, (1-u)\cdot v)}
+\end{align}
+
+This form of the integral allows us to use Monte Carlo technique. We consider the function 
+$g_{n,m}(\mathbf{x})=\frac{B(x_{1}\cdot x_{2} + n, (1-x_{1})\cdot x_{2} + m)}{B(x_{1}\cdot x_{2}, (1-x_{1})\cdot x_{2})}$ 
+and generate $M$ bidimensional random variables $\mathbf{x}\in[0,1]\times\mathbf{R}^{+}$ according to the bidimensional 
+distribution $f_{1}\times f_{2}$. Then, using $f(\mathbf{x})=f_{1}(x_{1})f_{2}(x_{2})$ as importance function, 
+we can write:
+\begin{equation}
+I_{n,m}(N^{\textrm{REG}})=\lim_{M\to\infty}\frac{1}{M}\sum_{i=1}^{M}g_{n,m}(\mathbf{x}_{i}).
+\end{equation}
+
+We made use of stratified importance sampling and introduced the stratification as follows: we defined $H_{1}\cdot H_{2}$ strata as the rectangular 
+domains $[a_{h_{1}-1}, a_{h_{1}}]\times [b_{h_{2} -1}, b_{h_{2}}]$, where $a_{h_{1}}=F_{1}^{-1}\left(h_{1}/H_{1}\right)$ ($h_{1}=1, \dots, H_{1}$) and $b_{h_{2}}=F_{2}^{-1}\left(h_{2}/H\right)$ ($h_{2}=1, \dots, H_{2}$), 
+and $F_{i}$ stands for the distribution function corresponding to the density function $f_{i}$. 
+Defining the importance function in each stratum by $f_{h_{1}h_{2}}= H_{1}\cdot H_{2}\cdot f_{1}\cdot f_{2}$ 
+truncated at $[a_{h_{1}-1}, a_{h_{1}}]\times[b_{h_{2}-1}, b_{h_{2}}]$ and taking equal-size strata $M_{h_{1}h_{2}}=\frac{M}{H_{1}H_{2}}$, 
+then we obtained:
+
+\begin{equation}
+I_{n,m}(N^{\textrm{REG}})=\lim_{M\to\infty}\frac{1}{M}\sum_{h_{1}=1}^{H_{1}}\sum_{h_{2}=1}^{H_{2}}\sum_{i_{h_{1}}=1}^{M/H_{2}}\sum_{i_{h_{2}}=1}^{M/H_{1}}g_{n,m}(\mathbf{x}_{i_{h_{1}}i_{h_{2}}})
+\end{equation}
+
+\noindent where the random values $\mathbf{x}_{i_{h_{1}}i_{h_{2}}}$ are generated with the corresponding density function $f_{h_{1}h_{2}}$.
+
+Once computed the integrals $I_{N^{\textrm{MNO}}, n}(N^{\textrm{REG}})$, the series $S(\beta_{0}, N^{\textrm{MNO}}, N^{\textrm{REG}})$ is summed up with standard procedures.
+
+Another approach of computing $S(\beta_{0}, N^{\textrm{MNO}}, N^{\textrm{REG}})$ gives \cite{methodology}:
+
+\begin{align}
+S(\lambda, N^{\textrm{MNO}}, N^{\textrm{REG}})&=\int_{0}^{\infty}\int_{0}^{\infty}d\alpha d\beta\ \frac{f_{1}(\frac{\alpha}{\alpha+\beta}; \mathbf{N}^{\textrm{REG}}, \mathbf{z})\cdot f_{2}(\alpha+\beta; \mathbf{N}^{\textrm{REG}}, \mathbf{z})}{\alpha+\beta}\Phi(\alpha, \beta; \lambda, N^{\textrm{MNO}}, N^{\textrm{REG}}),
+\end{align}
+
+\noindent where we have defined $\Phi(\alpha, \beta; \lambda, N^{\textrm{MNO}}, N^{\textrm{REG}}) = \frac{B(\alpha + N^{\textrm{MNO}}, \beta)}{B(\alpha, \beta)}\cdot {}_{1}F_{1}(\lambda; \beta, \alpha+\beta +N^{\textrm{MNO}})$ (see the corresponding functions \texttt{Phi()} and \texttt{kummer()} from \texttt{pestim} package). 
+With the same change of variables we get:
+\begin{align}
+S(\lambda, N^{\textrm{MNO}}, N^{\textrm{REG}})&=\int_{0}^{\infty}dv\ f_{2}(v)\int_{0}^{1} du\ f_{1}(u)\cdot \Phi(u\cdot v, (1-u)\cdot v; \lambda, N^{\textrm{MNO}}, N^{\textrm{REG}})\nonumber\\
+&=\int_{0}^{\infty}dv\ f_{2}(v)\int_{0}^{1} du\ f_{1}(u) \cdot\bar{\Phi}(u, v; \lambda, N^{\textrm{MNO}}, N^{\textrm{REG}})
+\end{align}
+Considering $\mathbf{x}=(u,v)^{T}$ we can apply the same Monte Carlo technique and we obtained:
+
+\begin{equation}
+S(\lambda, N^{\textrm{MNO}}, N^{\textrm{REG}})=\lim_{M\to\infty}\frac{1}{M}\sum_{h_{1}=1}^{H_{1}}\sum_{h_{2}=1}^{H_{2}}\sum_{i_{h_{1}}=1}^{M/H_{2}}\sum_{i_{h_{2}}=1}^{M/H_{1}}\bar{\Phi}(\mathbf{x}_{i_{h_{1}}i_{h_{2}}}; \lambda, N^{\textrm{MNO}}, N^{\textrm{REG}}),
+\end{equation}
+
+\noindent where the random values $\mathbf{x}_{i_{h_{1}}i_{h_{2}}}$ are generated with the corresponding density function $f_{h_{1}h_{2}}$.
+
+To estimate the number of individuals per cell we need a method to generate random variables 
+according to the posterior distribution $\mathbb{P}\left(N_{i}|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textrm{REG}}\right)$. 
+For this we need to generate random values for 
+hyperparameter $\lambda$ according to its posterior distribution \eqref{Hyper}:
+
+\begin{align}
+\mathbb{P}\left(\lambda\big|N^{\textrm{MNO}};N^{\textbf{REG}}\right)&\propto\mathbb{P}\left(\lambda\right)\cdot\textrm{Po}(N^{\textrm{MNO}}; \lambda) \cdot S\left(\lambda, N^{\textrm{MNO}}, N^{REG}\right).\nonumber
+\end{align}
+
+The unnormalized posterior density $\mathbb{P}\left(\lambda|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textrm{REG}}\right)$ 
+does not allow us to find easily the corresponding posterior distribution function to apply the inverse method to
+generate random variables \cite{Dev86a} and we made use of the acceptance-rejection method. 
+We considered a candidate distribution $g(x)=\textrm{Cauchy}(x; x_{0}= \lambda^{*}, \sigma)$ 
+truncated at $\mathbb{R}^{+}$ with $\lambda^{*}$ being the mode of $f(\lambda)$. Ths is implemented as \texttt{dg()} 
+function in the \texttt{pestim} package.
+For the family of prior distributions $\lambda\simeq\Gamma(\alpha + 1, \alpha / N^{\textrm{REG}})$ we choose 
+$\sigma = N^{\textrm{REG}}/\sqrt{\alpha}$.
+To generate random values $\lambda$ according to $\mathbb{P}\left(\lambda|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textrm{REG}}\right)$ 
+we generate values according to $g(\lambda)$, and values $v$ according to $\textrm{Unif}(0,1)$ so that we accept 
+those $\lambda$ such that $v\leq \frac{f(\lambda)}{c\cdot g(\lambda)}$.
+
+To generate random values $N$ according to $\mathbb{P}\left(N|N^{\textrm{MNO}};N^{\textrm{REG}}\right)$ we 
+generate values $\lambda$ and then the corresponding values $N$ according to the Poisson distribution with parameter $\lambda$. 
+
+
+\section{Examples how to use \texttt{pestim} package}
+
+In the following will we show how to use functions provided by \texttt{pestim} package to compute population estimations.
+
+\subsection{Prior distribution of the hyperparameters}
+\texttt{pestim} implements functions for the following prior distributions:
+\begin{itemize}
+	\item uniform distribution
+	\item triangular distribution
+	\item Gamma distribution
+\end{itemize}
+
+The uniform distribution is well know and functions that implement the density, distribution funtion, 
+quantile function and random variable generation are provided by the standard \texttt{R} distribution.
+
+The triangular distribution can be used to for modelling the local market shares $u$, 
+the cell size $v$ and the hyperparameter $\lambda$. The corresponding functions for 
+the density, distribution function, quantile function and random variable generation
+are \texttt{triang}, \texttt{dtriang}, \texttt{qtriang} and \texttt{rtriang}.
+Below is an example of how to use the triangular distribution function (see figure \ref{triang}).
+
+\begin{verbatim}
+library(ggplot2)
+library(pestim)
+x <- seq(0.10, 0.65, by = 0.01)
+y <- dtriang(x, xMin = 0.10, xMax = 0.65, xMode = 0.32)
+df <- data.frame(x = x, y= y)
+ggplot(df, aes(x, y)) + geom_line() + scale_x_continuous(limits = c(0, 1)) + xlab('u') + ylab('Probability Density')	
+}
+\end{verbatim}
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.75]{triang.eps}
+	\caption{The triangular distribution.}
+	\label{triang}
+\end{figure}
+
+The gamma distribution is another choice for modelling both the cell size $v$ and the hyperparameter $\lambda$.
+Functions for density, distribution function, quantile function and random generation for the Gamma distribution 
+are included in the standard \texttt{R} distribution.
+
+We can assume a parameterization $\Gamma(\alpha + 1, \xi^{*} / \alpha)$, where $\xi^{*}$ stands for the mode of the 
+modelled variable ($v$ or $\lambda$) and $\alpha> 0$ determines the degree of concentration 
+around the mode $\xi^{*}$ (see figure \ref{gamma}).
+Below is an example that shows how to use this distribution.
+
+\begin{verbatim}
+alphas <- c(1, 5, 10, 100, 1000)
+mode <- 35
+df <- lapply(alphas, function(alpha){
+    x <- 0:100
+    y <- dgamma(x, shape = alpha + 1, scale = mode / alpha)
+    z <- as.character(alpha)
+    output <- data.frame(x = x, y = y, alpha = z)
+    return(output)
+})
+df <- Reduce(rbind, df)
+ggplot(df, aes(x, y, col = alpha, group = alpha)) + geom_line(aes(linetype = alpha)) + scale_x_continuous(limits = c(0, 100)) + xlab('') + ylab('')
+\end{verbatim}
+
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.75]{gamma.eps}
+	\caption{The gamma distribution.}
+	\label{gamma}
+\end{figure}
+
+We can assume that there is a high correlation between the actual size and official data \cite{Q2016}.
+In our exampples, for the simulated data that we will generate, for a given actual true 
+value $N^{0}_{i}$ we will simulate a population register value $N^{\textrm{REG}_{i}}\simeq \lfloor N(\mu = N^{0}_{i}, \sigma = 10\%\cdot N^{0}_{i})\rfloor$. For the corresponding number of individuals detected through the mobile network we will assume a proportion 
+of detected individuals randomly between $15\%$ and $40\%$ as realistic figures (see  \cite{WP5Del11} to compare 
+with market shares as an approximation to these figures).
+
+\subsection{Estimation for a single cell}
+
+Since the treatment of all cells is independent of each other, we will start by showing the 
+estimation process for a single cell. We investigate different combinations of priors and 
+numerical regimes for $N^{\textrm{MNO}}$ and $N^{\textrm{REG}}$. In all cases we assume a 
+priori $f_{3}\simeq\Gamma\left(\alpha + 1, \frac{N^{\textrm{Reg}}}{\alpha}\right)$.
+Let us consider a true population size of $N^{(0)} = 100$, a population given by some administrative register
+$N^{\textrm{Reg}}=97$ assuming an error of $3\%$. 
+Let us also consider the number of individuals detected by the mobile network as $N^{\textrm{MNO}} = 19$ 
+assuming a proportion of detected individuals of around $20\%$.
+
+\subsubsection{$f_{1}\simeq\textrm{Unif}(u_{m}, u_{M})$, $f_{2}\simeq\textrm{triang}(v_{m}, v_{M}, v_{*})$}
+For the prior distribution of the proportion 
+of detected individuals we will assume a weakly informative distribution 
+$f_{u}=\textrm{Unif}(u_{m}, u_{M})$ with $u_{m}=0$ and $u_{M}=0.50$. For the prior 
+distribution of the cell size we will assume a triangular distribution with 
+parameters $v_{m}=87$, $v_{M}=107$, and $v^{*}=97$, assuming an (unknown) error of $10\%$ over 
+the population register size.
+
+Computing the estimates for values of $\alpha=1,10,100,1000$ and observing the effect of the amount of 
+uncertainty in the population size (see figure \ref{one}) can be achieved as follows:
+
+\begin{verbatim}
+library(pestim)
+library(data.table)
+library(ggplot2)
+nReg <- 97
+nMNO <- 19
+fu <- list('unif', xMin = 0, xMax = 0.50)
+fv <- list('triang', xMin = 87, xMax = 107, xMode = 97)
+alphaSeq <- c(1, 10, 100, 1000)
+flambdaList <- list()
+for (alpha in alphaSeq){
+    flambdaList[[as.character(alpha)]] <- list('gamma', shape = 1 + alpha, scale = nReg / alpha)	
+}
+nSim <- 100
+results <- lapply(alphaSeq, function(alpha){
+    flambda <- flambdaList[[as.character(alpha)]]
+    output <- replicate(nSim, postN0(nMNO, nReg, fu, fv, flambda))
+    output <- as.data.table(t(matrix(unlist(output), nrow = 3)))
+    setnames(output, c('postMean', 'postMedian', 'postMode'))
+    output[, sim := 1:nSim]
+    output <- melt(output, id.vars = 'sim')
+    output[, 'alpha' := alpha]
+    return(output)
+})
+names(results) <- alphaSeq
+results <- rbindlist(results)
+ggplot(results, aes(x = variable, y = value)) + 
+geom_boxplot() + facet_grid(. ~ alpha) + 
+xlab('') + ylab('') + 
+geom_hline(yintercept = nReg) + 
+theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = .5))
+\end{verbatim}
+
+The actual computation is done by \texttt{postN0} function that takes the following parameters:
+\begin{itemize}
+\item nMNO - the number of the individuals detected in the actual cell according to the mobile network operator
+\item nReg - the number of individuals from the register
+\item fu and fv - named lists with the prior marginal distributions of the two-dimensional points for the Monte Carlo integration
+\item flambda - named list with the prior distribution of the lambda parameter
+\item n - the number of points to generate in the posterior distribution for the computation. Default value is 1e3
+\item scale - a numeric vector with the scale to count the number of individuals. Default value is 1
+\item relTol - relative tolerance in the computation of the kummer function (default value is 1e-6)
+\item nSim - number of two-dimensional points to generate to compute the integral (default value is 1e4)
+\item nStrata - integer vector of length 2 with the number of strata in each dimension (default value is c(1, 1e2))
+\end{itemize}
+
+In this example we used the default values for \texttt{n, scale, relTol, nSim, nStrata} parameters.
+We can observe how the more precise the prior value of $\lambda = N^{\textrm{Reg}}$ is, the more precise 
+the final estimate around $N^{\textrm{Reg}}$ will result. 
+Notice how this final estimate inherits the original difference between $N^{(0)}$ and $N^{\textrm{Reg}}$, as expected.
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.75]{gamma.eps}
+	\caption{The uncertainty in population estimation.}
+	\label{one}
+\end{figure}
+
+\subsubsection{$f_{1}\simeq\textrm{Unif}(u_{m}, u_{M})$, $f_{2}\simeq\textrm{Unif}(N_{m}, N_{M})$}
+
+For the intervals $(u_{m}, u_{M})$ we will choose as centres of the intervals the value $N^{\textrm{MNO}} / N^{\textrm{Reg}}$ and as radii, 
+we will progressively shorten the intervals starting from 
+$r_{1}=min(N^{\textrm{MNO}} / N^{\textrm{Reg}}, 1- N^{\textrm{MNO}} / N^{\textrm{Reg}})$ down to $0.005$ and we will
+use a number $nPar=10$ for $u$.
+
+For the intervals $(N_{m}, N_{M})$ we will choose as centres of the intervals the 
+natural value $N^{\textrm{Reg}}$ and as radii, we will progressively shorten the intervals starting from 
+$R_{1}=\lfloor 0.25\cdot N^{\textrm{Reg}}\rfloor$ down to $1$ and we will also use the same number $nPar=10$ of points.
+
+In all cases we will use $\alpha = 1$ as a weakly informative choice. For each pair of 
+interval lengths $(u_{M}-u_{m}, N_{M} - N_{m})$ we will estimate the population and compute the relative
+bias $\frac{\hat{N}-N^{\textrm{Reg}}}{N^{\textrm{Reg}}} \cdot 100$ for 
+the posterior mean, median and mode estimates. The following piece of code does this estimation (to keep
+the length of this document reasonable we don't reproduce here the actual results).
+
+
+\begin{verbatim}
+library(pestim)
+library(data.table)
+nReg <- 97
+nMNO <- 19
+nPar <- 10
+radShares <- seq(from = nMNO / nReg, to = 0.005, length.out = nPar)
+radPopSizes <- round(seq(from = 0.25 * nReg, to = 1, length.out = nPar))
+alpha <- 1
+flambda <- list('gamma', shape = alpha + 1, scale = nReg / alpha)
+results.Mean <- matrix(NA, ncol = nPar, nrow = nPar)
+results.Median <- matrix(NA, ncol = nPar, nrow = nPar)
+results.Mode <- matrix(NA, ncol = nPar, nrow = nPar)
+for (radShare.index in seq(along = radShares)) {
+    for (radPopSize.index in seq(along = radPopSizes)) {
+        um <- nMNO / nReg - radShares[radShare.index]
+        uM <- nMNO / nReg + radShares[radShare.index]
+        fu <- list('unif', xMin = um, xMax = uM)
+        Nm <- nReg - radPopSizes[radPopSize.index]
+        NM <- nReg + radPopSizes[radPopSize.index]
+        fv <- list('unif', xMin = Nm, xMax = NM)
+        auxResults <- postN0(nMNO, nReg, fu, fv, flambda)
+        results.Mean[radShare.index, radPopSize.index] <- auxResults[['postMean']] 
+        results.Median[radShare.index, radPopSize.index] <- auxResults[['postMedian']]
+        results.Mode[radShare.index, radPopSize.index] <- auxResults[['postMode']]
+        }
+}
+rownames(results.Mean) <- round(2 * radShares, 2)
+rownames(results.Median) <- round(2 * radShares, 2)
+rownames(results.Mode) <- round(2 * radShares, 2)
+colnames(results.Mean) <- 2 * radPopSizes
+colnames(results.Median) <- 2 * radPopSizes
+colnames(results.Mode) <- 2 * radPopSizes
+relBias.Mean <- round((results.Mean - nReg) / nReg * 100, 1)
+relBias.Median <- round((results.Median - nReg) / nReg * 100, 1)
+relBias.Mode <- round((results.Mode - nReg) / nReg * 100, 1)
+\end{verbatim}
+
+\subsubsection{$f_{1}\simeq\textrm{Unif}(u_{m}, u_{M})$, $f_{2}\simeq\textrm{triang}(N_{m}, N_{M}, N^{\textrm{Reg}})$}
+
+The same computations as in the preceding section is carried out using a triangular prior distribution $f_{2}$ for the actual
+population size. The limits $N_{m}$ and $N_{M}$ are chosen as in the preceding section and the mode as $N^{*}=N^{\textrm{Reg}}$.
+
+\begin{verbatim}
+library(pestim)
+library(data.table)
+nReg <- 97
+nMNO <- 19
+nPar <- 10
+radShares <- seq(from = nMNO / nReg, to = 0.005, length.out = nPar)
+radPopSizes <- round(seq(from = 0.25 * nReg, to = 1, length.out = nPar))
+alpha <- 1
+flambda <- list('gamma', shape = alpha + 1, scale = nReg / alpha)
+results.Mean <- matrix(NA, ncol = nPar, nrow = nPar)
+results.Median <- matrix(NA, ncol = nPar, nrow = nPar)
+results.Mode <- matrix(NA, ncol = nPar, nrow = nPar)
+for (radShare.index in seq(along = radShares)) {
+    for (radPopSize.index in seq(along = radPopSizes)) {
+        um <- nMNO / nReg - radShares[radShare.index]
+        uM <- nMNO / nReg + radShares[radShare.index]
+        fu <- list('unif', xMin = um, xMax = uM)
+        Nm <- nReg - radPopSizes[radPopSize.index]
+        NM <- nReg + radPopSizes[radPopSize.index]
+        fv <- list('triang', xMin = Nm, xMax = NM, xMode = nReg)
+        auxResults <- postN0(nMNO, nReg, fu, fv, flambda)
+        results.Mean[radShare.index, radPopSize.index] <- auxResults[['postMean']] 
+        results.Median[radShare.index, radPopSize.index] <- auxResults[['postMedian']]
+        results.Mode[radShare.index, radPopSize.index] <- auxResults[['postMode']]
+    }
+}
+rownames(results.Mean) <- round(2 * radShares, 2)
+rownames(results.Median) <- round(2 * radShares, 2)
+rownames(results.Mode) <- round(2 * radShares, 2)
+colnames(results.Mean) <- 2 * radPopSizes
+colnames(results.Median) <- 2 * radPopSizes
+colnames(results.Mode) <- 2 * radPopSizes
+relBias.Mean <- round((results.Mean - nReg) / nReg * 100, 1)
+relBias.Median <- round((results.Median - nReg) / nReg * 100, 1)
+relBias.Mode <- round((results.Mode - nReg) / nReg * 100, 1)
+\end{verbatim}
+
+\subsubsection{$f_{1}\simeq\textrm{Unif}(u_{m}, u_{M})$, $f_{2}\simeq\Gamma(a + 1, \frac{N^{\textrm{Reg}}}{a})$}
+
+The same computation is exemplified now with $f_{2}\simeq\Gamma(a+1, \frac{N^{\textrm{Reg}}}{a})$ and $\log_{10}(a)=-3, -2, \dots, 2, 3$.
+
+
+\begin{verbatim}
+library(pestim)
+library(data.table)
+nReg <- 97
+nMNO <- 19
+nPar <- 10
+radShares <- seq(from = nMNO / nReg, to = 0.005, length.out = nPar)
+aPopSizes <- 10^{seq(-3, 3, by = 1)}
+alpha <- 1
+flambda <- list('gamma', shape = alpha + 1, scale = nReg / alpha)
+results.Mean <- matrix(NA, ncol = length(aPopSizes), nrow = length(radShares))
+results.Median <- matrix(NA, ncol = length(aPopSizes), nrow = length(radShares))
+results.Mode <- matrix(NA, ncol = length(aPopSizes), nrow = length(radShares))
+for (radShare.index in seq(along = radShares)) {
+    um <- nMNO / nReg - radShares[radShare.index]
+    uM <- nMNO / nReg + radShares[radShare.index]
+    fu <- list('unif', xMin = um, xMax = uM)
+    for (aPopSize.index in seq(along = aPopSizes)) {
+        fv <- list('gamma', shape = aPopSizes[aPopSize.index], scale = nReg / aPopSizes[aPopSize.index])
+        auxResults <- postN0(nMNO, nReg, fu, fv, flambda)
+        results.Mean[radShare.index, aPopSize.index] <- auxResults[['postMean']] 
+        results.Median[radShare.index, aPopSize.index] <- auxResults[['postMedian']]
+        results.Mode[radShare.index, aPopSize.index] <- auxResults[['postMode']]
+    }
+}
+rownames(results.Mean) <- round(2 * radShares, 2)
+rownames(results.Median) <- round(2 * radShares, 2)
+rownames(results.Mode) <- round(2 * radShares, 2)
+colnames(results.Mean) <- aPopSizes
+colnames(results.Median) <- aPopSizes
+colnames(results.Mode) <- aPopSizes
+relBias.Mean <- round((results.Mean - nReg) / nReg * 100, 1)
+relBias.Median <- round((results.Median - nReg) / nReg * 100, 1)
+relBias.Mode <- round((results.Mode - nReg) / nReg * 100, 1)
+\end{verbatim}
+
+\subsubsection{$f_{1}\simeq\textrm{Triang}(u_{m}, u_{M}, u^{*})$, $f_{2}\simeq\textrm{Unif}(N_{m}, N_{M})$}
+
+The same example is shown now for $f_{1}\simeq\textrm{Triang}$ and $f_{2}\simeq\textrm{Unif}$. The hyperparameters are chosen as before.
+
+\begin{verbatim}
+library(pestim)
+library(data.table)
+nReg <- 97
+nMNO <- 19
+nPar <- 10
+radShares <- seq(from = nMNO / nReg, to = 0.005, length.out = nPar)
+radPopSizes <- round(seq(from = 0.25 * nReg, to = 1, length.out = nPar))
+alpha <- 1
+flambda <- list('gamma', shape = alpha + 1, scale = nReg / alpha)
+results.Mean <- matrix(NA, ncol = nPar, nrow = nPar)
+results.Median <- matrix(NA, ncol = nPar, nrow = nPar)
+results.Mode <- matrix(NA, ncol = nPar, nrow = nPar)
+for (radShare.index in seq(along = radShares)) {
+    um <- nMNO / nReg - radShares[radShare.index]
+    uM <- nMNO / nReg + radShares[radShare.index]
+    uMode <- nMNO / nReg
+    fu <- list('triang', xMin = um, xMax = uM, xMode = uMode)
+    for (radPopSize.index in seq(along = radPopSizes)) {
+        Nm <- nReg - radPopSizes[radPopSize.index]
+        NM <- nReg + radPopSizes[radPopSize.index]
+        fv <- list('unif', xMin = Nm, xMax = NM)
+        auxResults <- postN0(nMNO, nReg, fu, fv, flambda)
+        results.Mean[radShare.index, radPopSize.index] <- auxResults[['postMean']] 
+        results.Median[radShare.index, radPopSize.index] <- auxResults[['postMedian']]
+        results.Mode[radShare.index, radPopSize.index] <- auxResults[['postMode']]
+    }
+}
+rownames(results.Mean) <- round(2 * radShares, 2)
+rownames(results.Median) <- round(2 * radShares, 2)
+rownames(results.Mode) <- round(2 * radShares, 2)
+colnames(results.Mean) <- 2 * radPopSizes
+colnames(results.Median) <- 2 * radPopSizes
+colnames(results.Mode) <- 2 * radPopSizes
+relBias.Mean <- round((results.Mean - nReg) / nReg * 100, 1)
+relBias.Median <- round((results.Median - nReg) / nReg * 100, 1)
+relBias.Mode <- round((results.Mode - nReg) / nReg * 100, 1)
+\end{verbatim}
+
+
+\subsubsection{$f_{1}\simeq\textrm{Triang}(u_{m}, u_{M}, u^{*})$, $f_{2}\simeq\textrm{Triang}(N_{m}, N_{M}, N^{\textrm{Reg}})$}
+
+Both prior distributions are considered too be traingular with the same choice for hyperparameters.
+
+\begin{verbatim}
+library(pestim)
+library(data.table)
+nReg <- 97
+nMNO <- 19
+nPar <- 10
+radShares <- seq(from = nMNO / nReg, to = 0.005, length.out = nPar)
+radPopSizes <- round(seq(from = 0.25 * nReg, to = 1, length.out = nPar))
+alpha <- 1
+flambda <- list('gamma', shape = alpha + 1, scale = nReg / alpha)
+results.Mean <- matrix(NA, ncol = nPar, nrow = nPar)
+results.Median <- matrix(NA, ncol = nPar, nrow = nPar)
+results.Mode <- matrix(NA, ncol = nPar, nrow = nPar)
+for (radShare.index in seq(along = radShares)) {
+    um <- nMNO / nReg - radShares[radShare.index]
+    uM <- nMNO / nReg + radShares[radShare.index]
+    uMode <- nMNO / nReg
+    fu <- list('triang', xMin = um, xMax = uM, xMode = uMode)
+    for (radPopSize.index in seq(along = radPopSizes)) {
+        Nm <- nReg - radPopSizes[radPopSize.index]
+        NM <- nReg + radPopSizes[radPopSize.index]
+        Nmode <- nReg
+        fv <- list('triang', xMin = Nm, xMax = NM, xMode = nReg)
+        auxResults <- postN0(nMNO, nReg, fu, fv, flambda)
+        results.Mean[radShare.index, radPopSize.index] <- auxResults[['postMean']] 
+        results.Median[radShare.index, radPopSize.index] <- auxResults[['postMedian']]
+        results.Mode[radShare.index, radPopSize.index] <- auxResults[['postMode']]
+    }
+}
+rownames(results.Mean) <- round(2 * radShares, 2)
+rownames(results.Median) <- round(2 * radShares, 2)
+rownames(results.Mode) <- round(2 * radShares, 2)
+colnames(results.Mean) <- 2 * radPopSizes
+colnames(results.Median) <- 2 * radPopSizes
+colnames(results.Mode) <- 2 * radPopSizes
+relBias.Mean <- round((results.Mean - nReg) / nReg * 100, 1)
+relBias.Median <- round((results.Median - nReg) / nReg * 100, 1)
+relBias.Mode <- round((results.Mode - nReg) / nReg * 100, 1)
+\end{verbatim}
+
+\subsubsection{$f_{1}\simeq\textrm{Triang}(u_{m}, u_{M}, u^{*})$, $f_{2}\simeq\Gamma(a + 1, \frac{N^{\textrm{Reg}}}{a})$}
+
+In the last example we we combine a triangular distribution for $f_{1}$ and a gamma distribution for $f_{2}$.
+\begin{verbatim}
+library(pestim)
+library(data.table)
+nReg <- 97
+nMNO <- 19
+nPar <- 10
+radShares <- seq(from = nMNO / nReg, to = 0.005, length.out = nPar)
+aPopSizes <- 10^{seq(-3, 3, by = 1)}
+alpha <- 1
+flambda <- list('gamma', shape = alpha + 1, scale = nReg / alpha)
+results.Mean <- matrix(NA, ncol = length(aPopSizes), nrow = length(radShares))
+results.Median <- matrix(NA, ncol = length(aPopSizes), nrow = length(radShares))
+results.Mode <- matrix(NA, ncol = length(aPopSizes), nrow = length(radShares))
+for (radShare.index in seq(along = radShares)) {
+    um <- nMNO / nReg - radShares[radShare.index]
+    uM <- nMNO / nReg + radShares[radShare.index]
+    uMode <- nMNO / nReg
+    fu <- list('triang', xMin = um, xMax = uM, xMode = uMode)
+    for (aPopSize.index in seq(along = aPopSizes)) {
+        fv <- list('gamma', shape = aPopSizes[aPopSize.index], scale = nReg / aPopSizes[aPopSize.index])
+        auxResults <- postN0(nMNO, nReg, fu, fv, flambda)
+        results.Mean[radShare.index, aPopSize.index] <- auxResults[['postMean']] 
+        results.Median[radShare.index, aPopSize.index] <- auxResults[['postMedian']]
+        results.Mode[radShare.index, aPopSize.index ] <- auxResults[['postMode']]
+    }
+}
+rownames(results.Mean) <- round(2 * radShares, 2)
+rownames(results.Median) <- round(2 * radShares, 2)
+rownames(results.Mode) <- round(2 * radShares, 2)
+colnames(results.Mean) <- aPopSizes
+colnames(results.Median) <- aPopSizes
+colnames(results.Mode) <- aPopSizes
+relBias.Mean <- round((results.Mean - nReg) / nReg * 100, 1)
+relBias.Median <- round((results.Median - nReg) / nReg * 100, 1)
+relBias.Mode <- round((results.Mode - nReg) / nReg * 100, 1)
+\end{verbatim}
+
+
+\subsection{Estimation for several cells}
+
+The process of obtaining estimations for the target population for a grid of cells reproduces the process for a single cell
+since the estimation in each cell is independent of each other.
+
+
+We can consider the ratios $\frac{N_{i}^{\textrm{MNO}}}{N^{\textrm{Reg}}_{i}}$ 
+as an initial guess for the proportions of detected individuals $u_{i}$ 
+with a highly probable value whose uncertainty will depend both on the process to obtain $N_{i}^{\textrm{MNO}}$ 
+(preprocessing and aggregation stages of the mobile phone data) 
+and on the process to compile the population register figures $N_{i}^{\textrm{Reg}}$ 
+(measurement errors, processing errors, coverage, \dots). 
+Any of the three prior distributions (uniform, triangular, gamma) can be used to express this 
+uncertainty around $\frac{N_{i}^{\textrm{MNO}}}{N^{\textrm{Reg}}_{i}}$ and, if necessary, 
+even more complex alternative possibilities can be built.
+
+Regarding the prior distribution for the local cell size $v_{i}$ we can make similar 
+considerations around the value $N_{i}^{\textrm{Reg}}$ for each cell $i$ now focusing on the 
+process of construction of the population register.
+
+The prior distribution for the parameter $\lambda_{i}$ is very important. 
+If we choose $\alpha_{i}\gg 1$, this means a high confidence on 
+the population register as the true population. It is advisable to be conservative 
+and choose low values so that we do not artificially  \textquotedblleft force\textquotedblright\ 
+the final estimates to be close to $N_{i}^{\textrm{Reg}}$. In the choice of $\alpha_{i}$ in this case, 
+however, we can make use of the grid construction and the distribution 
+of $N_{i}^{\textrm{Reg}}$ to propose some prior values. 
+
+The variance of $\Gamma(\alpha_{i} + 1, \frac{N^{\textrm{Reg}}_{i}}{\alpha_{i}})$ 
+is $\frac{\alpha_{i} + 1}{\alpha_{i}^{2}}\cdot N^{\textrm{Reg}}_{i}$ and under the 
+assumption of having a regular grid over the population, we can equate 
+$\frac{\alpha_{i} + 1}{\alpha_{i}^{2}}\cdot N^{\textrm{Reg}}=\frac{1}{N_{cells} - 1}\sum_{i=1}^{N_{cell}}\left(N_{i}^{\textrm{Reg}} - \bar{N}^{\textrm{Reg}}\right)^{2}$
+to have a first value (upper bound) for $\alpha\leq\min_{i}\alpha_{i}$. 
+
+The estimation processes for the prior hyperparameters are very important if we want to obtain final estimates 
+not based upon dangerously subjective beliefs.
+
+In the following we will show an example how to estimate the population in $Nc=50$ cells, 
+and we will consider a range of values for the hyperparameters to observe the effects on the final estimate.
+
+For the intervals $(u_{m,i}, u_{M,i})$ we will choose as centres of the intervals the 
+natural values $N^{\textrm{MNO}}_{i} / N^{\textrm{Reg}}_{i}$ and as radii, we will progressively 
+shorten the intervals starting from $r_{1,i}=min(N^{\textrm{MNO}}_{i} / N^{\textrm{Reg}}_{i}, 1- N^{\textrm{MNO}}_{i} / N^{\textrm{Reg}}_{i})$ down to $0.005$.
+
+For the intervals $(N_{m,i}, N_{M,i})$ we will choose as centres of the intervals the natural 
+values $N^{\textrm{Reg}}_{i}$ and as radii, we will progressively shorten the intervals starting 
+from $R_{1,i}=\lfloor 0.25\cdot N^{\textrm{Reg}}_{i}\rfloor$ down to $1$. We will generate a nummber
+of $nPar=5$ values for each interval.
+
+The following piece of code computes and displays the distribution of the relative 
+bias $\frac{\hat{N}_{i}-N^{\textrm{Reg}}_{i}}{N^{\textrm{Reg}}} \cdot 100$ for the posterior mean, median and mode estimates, respectively, 
+for all pairs of interval lengths $(u_{M,i}-u_{m,i}, N_{M,i} - N_{m,i})$ and all cells.
+
+\begin{verbatim}
+library(pestim)
+library(data.table)
+library(ggplot2)
+nCell <- 50
+nReg <- round(rnorm(nCell, 71, 3))
+nMNO <- round(rnorm(nCell, 19, 2))
+nPar <- 5
+radShares <- lapply(1:nCell, function(i){
+    seq(from = (nMNO / nReg)[i], to = 0.005, length.out = nPar)
+})
+radPopSizes <- lapply(1:nCell, function(i){
+    round(seq(from = 0.25 * nReg[i], to = 1, length.out = nPar))
+})
+varnReg <- var(nReg)
+alphaBound <- sapply(1:nCell, function(i){
+    0.5 * (nReg[i] / varnReg + sqrt((nReg[i] / varnReg)^2 + 4 * nReg[i] / varnReg))
+})
+alpha <- min(alphaBound)
+results.Mean <- lapply(1:nCell, function(i){matrix(NA, ncol = nPar, nrow = nPar)})
+results.Median <- lapply(1:nCell, function(i){matrix(NA, ncol = nPar, nrow = nPar)})
+results.Mode <- lapply(1:nCell, function(i){matrix(NA, ncol = nPar, nrow = nPar)})
+relBias.Mean <- list()
+relBias.Median <- list()
+relBias.Mode <- list()
+for (i in 1:nCell){
+    for (radShare.index in seq(along = radShares[[i]])) {
+        for (radPopSize.index in seq(along = radPopSizes[[i]])) {
+            um <- nMNO[[i]] / nReg[[i]] - radShares[[i]][radShare.index]
+            uM <- nMNO[[i]] / nReg[[i]] + radShares[[i]][radShare.index]
+            fu <- list('unif', xMin = um, xMax = uM)
+            Nm <- nReg[[i]] - radPopSizes[[i]][radPopSize.index]
+            NM <- nReg[[i]] + radPopSizes[[i]][radPopSize.index]
+            fv <- list('unif', xMin = Nm, xMax = NM)
+            flambda <- list('gamma', shape = alpha + 1, scale = nReg[[i]] / alpha)
+
+            auxResults <- postN0(nMNO[[i]], nReg[[i]], fu, fv, flambda)
+            results.Mean[[i]][radShare.index, radPopSize.index] <- auxResults[['postMean']] 
+            results.Median[[i]][radShare.index, radPopSize.index] <- auxResults[['postMedian']]
+            results.Mode[[i]][radShare.index, radPopSize.index] <- auxResults[['postMode']]
+        }
+    }
+    rownames(results.Mean[[i]]) <- round(2 * radShares[[i]], 2)
+    rownames(results.Median[[i]]) <- round(2 * radShares[[i]], 2)
+    rownames(results.Mode[[i]]) <- round(2 * radShares[[i]], 2)
+    colnames(results.Mean[[i]]) <- 2 * radPopSizes[[i]]
+    colnames(results.Median[[i]]) <- 2 * radPopSizes[[i]]
+    colnames(results.Mode[[i]]) <- 2 * radPopSizes[[i]]
+    relBias.Mean[[i]] <- round((results.Mean[[i]] - nReg[[i]]) / nReg[[i]] * 100, 1)
+    relBias.Median[[i]] <- round((results.Median[[i]] - nReg[[i]]) / nReg[[i]] * 100, 1)
+    relBias.Mode[[i]] <- round((results.Mode[[i]] - nReg[[i]]) / nReg[[i]] * 100, 1)
+}
+
+parNames <- expand.grid(paste0('u', 1:5), paste0('v', 1:5))
+colnames(parNames) <- c('u', 'v')
+
+relBias.Mean.df <- data.frame(u = character(0), v = character(0), cell = character(0), N = numeric(0))
+relBias.Median.df <- data.frame(u = character(0), v = character(0), cell = character(0), N = numeric(0))
+relBias.Mode.df <- data.frame(u = character(0), v = character(0), cell = character(0), N = numeric(0))
+for (i in 1:nCell){
+    aux <- cbind(parNames, cell = as.character(i), N = as.vector(relBias.Mean[[i]]))
+    relBias.Mean.df <- rbind(relBias.Mean.df, aux)
+
+    aux <- cbind(parNames, cell = as.character(i), N = as.vector(relBias.Median[[i]]))
+    relBias.Median.df <- rbind(relBias.Median.df, aux)
+
+    aux <- cbind(parNames, cell = as.character(i), N = as.vector(relBias.Mode[[i]]))
+    relBias.Mode.df <- rbind(relBias.Mode.df, aux)
+}
+ggplot(relBias.Mean.df, aes(x = ' ', y = N)) + geom_boxplot() +
+facet_grid(factor(u) ~ factor(v)) + xlab('Diverse combinations of prior parameters') + ylab('Mean Estimates\n') +
+ggtitle(paste0('Relative bias (%) distributions of the ', nCell, ' cells\n')) +
+theme(plot.title = element_text(face = 'bold', size = 14, hjust = 0.5))
+
+ggplot(relBias.Median.df, aes(x = ' ', y = N)) + geom_boxplot() +
+facet_grid(factor(u) ~ factor(v)) +
+xlab('Diverse combinations of prior parameters') + ylab('Median Estimates\n') +
+ggtitle(paste0('Relative bias (%) distributions of the ', nCell, ' cells\n')) +
+theme(plot.title = element_text(face = 'bold', size = 14, hjust = 0.5))
+
+ggplot(relBias.Mode.df, aes(x = ' ', y = N)) + geom_boxplot() +
+facet_grid(factor(u) ~ factor(v)) +
+xlab('Diverse combinations of prior parameters') + ylab('Mode Estimates\n') +
+ggtitle(paste0('Relative bias (%) distributions of the ', nCell, ' cells\n')) +
+theme(plot.title = element_text(face = 'bold', size = 14, hjust = 0.5))
+\end{verbatim}
+
+The same combinations for distributions used for $f_{1}$ and $f_{2}$ can be done in the of several cell like in 
+the case of a single cell. Since this process is straightforward we will not show here each combination.
+
+
+\section{Estimates along a sequence of time}
+
 
 
 \begin{thebibliography}{99}
 
 \bibitem{methodology}
-~Deptartment of Methodology and Development of Statistical Production, Statistics Spain (INE), 
+~Department of Methodology and Development of Statistical Production, Statistics Spain (INE), 
 A hierarchical model to estimate population counts from
 aggregated mobile phone data, January, 2018.
 

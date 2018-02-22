@@ -231,7 +231,26 @@ Now, the detection probabilities $p_{i}$ in our mobile phone setting differs fro
 
 It is interesting to make a short reflection about these proportions $p_{i}$ and the so-called local market shares. The latter are the number of subscribers of a given MNO in a cell $i$ and they are sometimes considered as an important piece of information in performing the inference exercise from mobile phone data to the target population. We must stress that, in our view, it is not the concept of market share which is important but that of the actual proportion of individuals detected by the network. As an illustrative example, a call between a subscriber in a cell $i$ and a non-subscriber in another cell $j$ of a given MNO is certainly detected by the network in \emph{\textbf{both cells}}, thus potentially being part of the aggregated data $N_{i}^{\textrm{MNO}}$ and $N_{j}^{\textrm{MNO}}$. This is a clear example of why having knowledge of the preprocessing and aggregation procedures from microdata is important for the final results.
 
-We will model the detection probabilities $p_{i}$ to account for the uncertainty we have in these quantities. Thus they are modelled as beta random variables with parameters $\alpha_{i}, \beta_{i}$ independently in each cell. The prior distribution of the beta distribution parameters $\alpha_{i}, \beta_{i}$ arises from the following reasoning. We assume that $\frac{\alpha_{i}}{\alpha_{i} + \beta_{i}}$ and $\alpha_{i} + \beta_{i}$ distribute independently according to $\frac{\alpha_{i}}{\alpha_{i} + \beta_{i}}\simeq f_{1}(\frac{\alpha_{i}}{\alpha_{i}+\beta_{i}}; \mathbf{N}^{\textrm{REG}}, \mathbf{z})$  and $\alpha_{i} + \beta_{i}\simeq f_{2}(\alpha_{i}+\beta_{i}; \mathbf{N}^{\textrm{REG}}, \mathbf{z})$, where $f_{1}$ and $f_{2}$ are respective weakly informative prior distributions for $\frac{\alpha}{\alpha + \beta}$ and $\alpha + \beta$. Notice that we have again made use of the auxiliary information coming from the population register ($\mathbf{N}^{\textrm{REG}}$) and any other auxiliary information $\mathbf{z}$. The quantity $\alpha_{i}/(\alpha_{i}+\beta_{i})$ can be understood as a priori proportions of individuals detected by the MNO in cell $i$ (e.g. should we have no information, then $f_{1}=\textrm{Unif}[0,1]$). The parameters $\alpha_{i}+\beta_{i}$ can be essentially understood as the population size of each cell $N_{i}$ (thus with support in $(0,\infty)$) upon which the detection is executed at that time instant. For example, we may assume $f_{2}$ to be a gamma distribution with parameters $(N_{i}^{\textrm{MNO}} + 1, \frac{N_{i}^{\textrm{MNO}}}{N_{i}^{\textrm{REG}}})$. In this way, the most probable value for the sample size is $N_{i}^{\textrm{REG}}$ in consonance with the preceding hypothesis for $N_{i}$.
+We will model the detection probabilities $p_{i}$ to account for the uncertainty we 
+have in these quantities. Thus they are modelled as beta random variables with
+ parameters $\alpha_{i}, \beta_{i}$ independently in each cell.
+ The prior distribution of the beta distribution parameters $\alpha_{i}, \beta_{i}$ arises 
+ from the following reasoning. We assume that $\frac{\alpha_{i}}{\alpha_{i} + \beta_{i}}$ 
+ and $\alpha_{i} + \beta_{i}$ distribute independently according 
+ to $\frac{\alpha_{i}}{\alpha_{i} + \beta_{i}}\simeq f_{1}(\frac{\alpha_{i}}{\alpha_{i}+\beta_{i}}; \mathbf{N}^{\textrm{REG}}, \mathbf{z})$  
+ and $\alpha_{i} + \beta_{i}\simeq f_{2}(\alpha_{i}+\beta_{i}; \mathbf{N}^{\textrm{REG}}, \mathbf{z})$, 
+ where $f_{1}$ and $f_{2}$ are respective weakly informative prior distributions for $\frac{\alpha}{\alpha + \beta}$
+ and $\alpha + \beta$. 
+ Notice that we have again made use of the auxiliary information coming from the population 
+ register ($\mathbf{N}^{\textrm{REG}}$) and any other auxiliary information $\mathbf{z}$. 
+ The quantity $\alpha_{i}/(\alpha_{i}+\beta_{i})$ can be understood as a priori proportions 
+ of individuals detected by the MNO in cell $i$ (e.g. should we have no information, then $f_{1}=\textrm{Unif}[0,1]$). 
+ The parameters $\alpha_{i}+\beta_{i}$ can be essentially understood as the population size of 
+ each cell $N_{i}$ (thus with support in $(0,\infty)$) upon which the detection is executed at that time instant. 
+ For example, we may assume $f_{2}$ to be a gamma distribution with parameters 
+ $(N_{i}^{\textrm{MNO}} + 1, \frac{N_{i}^{\textrm{MNO}}}{N_{i}^{\textrm{REG}}})$. 
+ In this way, the most probable value for the sample size is $N_{i}^{\textrm{REG}}$ in 
+ consonance with the preceding hypothesis for $N_{i}$.
 
 Finally, the parameters $\lambda_{i}$ are modeled with another weakly information prior $f_{3}$ which may incorporate the information we have from the population register or similar sources. Notice that the only a priori information incorporated is coming from this auxiliary source.
 
@@ -268,9 +287,19 @@ The estimate is thus an accurately approximate convex combination of both extrem
 The full Bayesian approach in the forthcoming sections incorporate our uncertainty in the knowledge of the hyperparameters (especially of $u=\frac{\alpha}{\alpha + \beta}$ and $v = \alpha + \beta$), since we do not know with certainty the values of the proportion of individuals and of the actual population size of each cell upon which the detection is executed.
 
 # Posterior distribution for the target population
-The quantity of interest is the target population counts $\mathbf{N}=(N_{1},\dots,N_{I})^{T}$ in each cell $i$. To account for uncertainty (thus for accuracy estimation and quality measures) we will follow a Bayesian approach. Notice that we can leverage the prior information we have by choosing the probability distribution $f_{1}$, $f_{2}$ and $f_{3}$. Should we choose very weakly informative priors, final estimates would not a priori differ very much from the frequentist approach. We shall not make considerations about the philosophical differences between both approaches. We will keep pragmatic and assess the final results according to our simulations. The choice of the Bayesian approach allows us to account for the inference and the assessment of the uncertainty, hence of quality, thus complying with the goals of the project.
+The quantity of interest is the target population counts $\mathbf{N}=(N_{1},\dots,N_{I})^{T}$ in each cell $i$. 
+To account for uncertainty (thus for accuracy estimation and quality measures) we will follow a Bayesian approach. 
+Notice that we can leverage the prior information we have by choosing the probability distribution $f_{1}$, $f_{2}$ and $f_{3}$. 
+Should we choose very weakly informative priors, final estimates would not a priori differ very much from the frequentist approach. 
+We shall not make considerations about the philosophical differences between both approaches. 
+We will keep pragmatic and assess the final results according to our simulations. 
+The choice of the Bayesian approach allows us to account for the inference and the assessment of the uncertainty, 
+hence of quality, thus complying with the goals of the project.
 
-Thus we must find the posterior distribution $\mathbb{P}\left(\mathbf{N}\big|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textbf{REG}}\right)$ or equivalently the marginal distributions $\mathbb{P}\left(N_{i}\big|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textbf{REG}}\right)$. We drop the subscripts since the treatment of each cell is equivalent and independent of each other. As usual, we will focus on the unnormalised version of the involved probabilities. We make use of the hierarchy:
+Thus we must find the posterior distribution $\mathbb{P}\left(\mathbf{N}\big|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textbf{REG}}\right)$ or equivalently 
+the marginal distributions $\mathbb{P}\left(N_{i}\big|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textbf{REG}}\right)$. 
+We drop the subscripts since the treatment of each cell is equivalent and independent of each other. 
+As usual, we will focus on the unnormalised version of the involved probabilities. We make use of the hierarchy:
 
 \begin{align}
 \mathbb{P}\left(N\big|N^{\textrm{MNO}};N^{\textbf{REG}}\right)&\propto\int_{0}^{\infty} d\lambda\quad\mathbb{P}\left(N|\lambda\right)\mathbb{P}\left(\lambda\big|\mathbf{N}^{\textrm{MNO}};N^{\textbf{REG}}\right)\nonumber\\
@@ -286,7 +315,9 @@ As we have stated in the preceding section notice that being $N$ a Poisson rando
 
 
 ## A first analytical expression 
-We will try to be analytical as far as possible, leaving numerical computations for later developments. To compute the posterior $\mathbb{P}\left(\lambda \big|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textbf{REG}}\right)$ we proceed as always (see e.g. @BDA3):
+We will try to be analytical as far as possible, leaving numerical computations for later developments. 
+To compute the posterior $\mathbb{P}\left(\lambda \big|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textbf{REG}}\right)$ 
+we proceed as always (see e.g. @BDA3):
 
 \begingroup\footnotesize
 \begin{align}
@@ -324,7 +355,8 @@ We include here the different attempts conducted to compute $S(\lambda, N^{\text
 
 ### Approach 1
 
-In this approach we first compute the integral $I_{N^{\textrm{MNO}}, n}(N^{\textrm{REG}})$ and then we sum up the series. We perform the change of variables $u = \frac{\alpha}{\alpha + \beta}, v = \alpha + \beta$ so that the integral transforms into 
+In this approach we first compute the integral $I_{N^{\textrm{MNO}}, n}(N^{\textrm{REG}})$ and then we sum up the series. 
+We perform the change of variables $u = \frac{\alpha}{\alpha + \beta}, v = \alpha + \beta$ so that the integral transforms into 
 
 \begin{subequations}
 \begin{align}
@@ -365,13 +397,25 @@ I_{n,m}(N^{\textrm{REG}})&=\sum_{k=0}^{n}\sum_{l=0}^{m}\left[\begin{matrix}n\\k\
 
 Thus we have reduced the integral to the computation of $J_{n+m,p}(N^{\textrm{REG}})$ and $$a_{n,m}(p)=\sum_{q=0}^{p}\left[\begin{matrix}n\\q\end{matrix}\right]\left[\begin{matrix}m\\p-q\end{matrix}\right]\bar{B}(q + 1, p - q +1).$$
 
-These two quantities can be further expressed analytically in some cases (see the appendices). However we do not see an easy computer implementation of these expressions. Thus we opt for Monte Carlo computation. We focus on expression \eqref{MC} to conduct a Monte Carlo evaluation of the integral $I_{n,m}(N^{\textrm{REG}})$. To this end consider the function $g_{n,m}(\mathbf{x})=\frac{B(x_{1}\cdot x_{2} + n, (1-x_{1})\cdot x_{2} + m)}{B(x_{1}\cdot x_{2}, (1-x_{1})\cdot x_{2})}$ and generate $M$ bidimensional random variables $\mathbf{x}\in[0,1]\times\mathbf{R}^{+}$ according to the bidimensional distribution $f_{1}\times f_{2}$. Then, using $f(\mathbf{x})=f_{1}(x_{1})f_{2}(x_{2})$ as importance function, we can write as a first option
+These two quantities can be further expressed analytically in some cases (see the appendices). 
+However we do not see an easy computer implementation of these expressions. 
+Thus we opt for Monte Carlo computation. We focus on expression \eqref{MC} to conduct a Monte Carlo evaluation of the integral $I_{n,m}(N^{\textrm{REG}})$. 
+To this end consider the function $g_{n,m}(\mathbf{x})=\frac{B(x_{1}\cdot x_{2} + n, (1-x_{1})\cdot x_{2} + m)}{B(x_{1}\cdot x_{2}, (1-x_{1})\cdot x_{2})}$ 
+and generate $M$ bidimensional random variables $\mathbf{x}\in[0,1]\times\mathbf{R}^{+}$ according to the bidimensional 
+distribution $f_{1}\times f_{2}$. Then, using $f(\mathbf{x})=f_{1}(x_{1})f_{2}(x_{2})$ as importance function, 
+we can write as a first option
 
 \begin{equation}
 I_{n,m}(N^{\textrm{REG}})=\lim_{M\to\infty}\frac{1}{M}\sum_{i=1}^{M}g_{n,m}(\mathbf{x}_{i}).
 \end{equation}
 
-To accelerate the convergence we make use of stratified importance sampling. To introduce the stratification let us define $H_{1}\cdot H_{2}$ strata as the rectangular domains $[a_{h_{1}-1}, a_{h_{1}}]\times [b_{h_{2} -1}, b_{h_{2}}]$, where $a_{h_{1}}=F_{1}^{-1}\left(h_{1}/H_{1}\right)$ ($h_{1}=1, \dots, H_{1}$) and $b_{h_{2}}=F_{2}^{-1}\left(h_{2}/H\right)$ ($h_{2}=1, \dots, H_{2}$), and $F_{i}$ stands for the distribution function corresponding to the density function $f_{i}$. Defining the importance function in each stratum by $f_{h_{1}h_{2}}= H_{1}\cdot H_{2}\cdot f_{1}\cdot f_{2}$ truncated at $[a_{h_{1}-1}, a_{h_{1}}]\times[b_{h_{2}-1}, b_{h_{2}}]$ and taking equal-size strata $M_{h_{1}h_{2}}=\frac{M}{H_{1}H_{2}}$, then we finally write 
+To accelerate the convergence we make use of stratified importance sampling. 
+To introduce the stratification let us define $H_{1}\cdot H_{2}$ strata as the rectangular 
+domains $[a_{h_{1}-1}, a_{h_{1}}]\times [b_{h_{2} -1}, b_{h_{2}}]$, where $a_{h_{1}}=F_{1}^{-1}\left(h_{1}/H_{1}\right)$ ($h_{1}=1, \dots, H_{1}$) and $b_{h_{2}}=F_{2}^{-1}\left(h_{2}/H\right)$ ($h_{2}=1, \dots, H_{2}$), 
+and $F_{i}$ stands for the distribution function corresponding to the density function $f_{i}$. 
+Defining the importance function in each stratum by $f_{h_{1}h_{2}}= H_{1}\cdot H_{2}\cdot f_{1}\cdot f_{2}$ 
+truncated at $[a_{h_{1}-1}, a_{h_{1}}]\times[b_{h_{2}-1}, b_{h_{2}}]$ and taking equal-size strata $M_{h_{1}h_{2}}=\frac{M}{H_{1}H_{2}}$, 
+then we finally write 
 
 \begin{equation}
 I_{n,m}(N^{\textrm{REG}})=\lim_{M\to\infty}\frac{1}{M}\sum_{h_{1}=1}^{H_{1}}\sum_{h_{2}=1}^{H_{2}}\sum_{i_{h_{1}}=1}^{M/H_{2}}\sum_{i_{h_{2}}=1}^{M/H_{1}}g_{n,m}(\mathbf{x}_{i_{h_{1}}i_{h_{2}}})
@@ -414,7 +458,13 @@ Both approaches have been tested. Details about the computer implementation of t
 
 # Generation of random variables
 
-To conduct simulation studies and carry out the estimation on the number of individuals per cell we need to generate random variables according to the posterior distribution $\mathbb{P}\left(N_{i}|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textrm{REG}}\right)$. We have two options: either we use \eqref{PostProbN} to compute an expression for the probability function of $N_{i}$ or we make use of the hierarchy by generating random values of $\lambda$ according to $\mathbb{P}\left(\lambda|\mathbf{N}^{\textrm{MNO}}; \mathbf{N}^{\textrm{REG}}\right)$ and then use these values to generate $N_{i}$ according to $\textrm{Po}(\lambda)$. We choose the latter. Thus we need to generate random values of the hyperparameter $\lambda$ according to its posterior distribution \eqref{Hyper}:
+To conduct simulation studies and carry out the estimation on the number of individuals per cell we need to generate random variables 
+according to the posterior distribution $\mathbb{P}\left(N_{i}|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textrm{REG}}\right)$. 
+We have two options: either we use \eqref{PostProbN} to compute an expression for the probability function of $N_{i}$ or we 
+make use of the hierarchy by generating random values of 
+$\lambda$ according to $\mathbb{P}\left(\lambda|\mathbf{N}^{\textrm{MNO}}; \mathbf{N}^{\textrm{REG}}\right)$ 
+and then use these values to generate $N_{i}$ according to $\textrm{Po}(\lambda)$. We choose the latter. 
+Thus we need to generate random values of the hyperparameter $\lambda$ according to its posterior distribution \eqref{Hyper}:
 
 \begin{align}
 \mathbb{P}\left(\lambda\big|N^{\textrm{MNO}};N^{\textbf{REG}}\right)&\propto\mathbb{P}\left(\lambda\right)\cdot\textrm{Po}(N^{\textrm{MNO}}; \lambda) \cdot S\left(\lambda, N^{\textrm{MNO}}, N^{REG}\right).\nonumber
@@ -422,7 +472,13 @@ To conduct simulation studies and carry out the estimation on the number of indi
 
 The unnormalized posterior density $\mathbb{P}\left(\lambda|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textrm{REG}}\right)$ does not allow us to find easily the corresponding posterior distribution function to apply the inverse method to generate random variables (see e.g. @Dev86a). We then try to use the acceptance-rejection method. Indeed this method is appropriate to use with unnormalized probability functions.
 
-Let us define $f(x)=\mathbb{P}\left(x|N^{\textrm{MNO}};N^{\textrm{REG}}\right)$. As candidate distribution $g(x)$ we will use a Cauchy distribution $g(x)=\textrm{Cauchy}(x; x_{0}= \lambda^{*}, \sigma)$ truncated at $\mathbb{R}^{+}$ with $\lambda^{*}=\textrm{argmax}_{\lambda\geq 0}f(\lambda)$ (i.e. the mode of $f(\lambda)$). We need to prove rigorously that $f$ is majorized by this candidate distribution $g$. So far, computing tests have been satisfactory. Also we do not have a general recipe for the scale parameter $\sigma$. For the family of prior distributions $\lambda\simeq\Gamma(\alpha + 1, \alpha / N^{\textrm{REG}})$ (with mode $N^{\textrm{REG}}$ and variance $\frac{\alpha + 1}{(\alpha / N^{\textrm{REG}})^2}$) we choose $\sigma = N^{\textrm{REG}}/\sqrt{\alpha}$. The parameter $\alpha$ is a measure of the a priori concentration of $\lambda$ around the value $N^{\textrm{REG}}$ (see next section).
+Let us define $f(x)=\mathbb{P}\left(x|N^{\textrm{MNO}};N^{\textrm{REG}}\right)$. As candidate distribution $g(x)$ we will use a Cauchy 
+distribution $g(x)=\textrm{Cauchy}(x; x_{0}= \lambda^{*}, \sigma)$ truncated at 
+$\mathbb{R}^{+}$ with $\lambda^{*}=\textrm{argmax}_{\lambda\geq 0}f(\lambda)$ (i.e. the mode of $f(\lambda)$). 
+We need to prove rigorously that $f$ is majorized by this candidate distribution $g$. So far, 
+computing tests have been satisfactory. Also we do not have a general recipe for the scale 
+parameter $\sigma$. For the family of prior distributions $\lambda\simeq\Gamma(\alpha + 1, \alpha / N^{\textrm{REG}})$ (with mode $N^{\textrm{REG}}$ 
+and variance $\frac{\alpha + 1}{(\alpha / N^{\textrm{REG}})^2}$) we choose $\sigma = N^{\textrm{REG}}/\sqrt{\alpha}$. The parameter $\alpha$ is a measure of the a priori concentration of $\lambda$ around the value $N^{\textrm{REG}}$ (see next section).
 
 Next we must find $c\in\mathbb{R}$ such that 
 
@@ -434,7 +490,8 @@ Taking the minimal $c$ for sampling efficiency reasons we have
 
 $$c=\sup_{x\geq 0}\frac{f(x)}{g(x)}.$$
 
-To generate random values $\lambda$ according to $\mathbb{P}\left(\lambda|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textrm{REG}}\right)$ we generate values according to $g(\lambda)$, and values $v$ according to $\textrm{Unif}(0,1)$ so that we accept those $\lambda$ such that $v\leq \frac{f(\lambda)}{c\cdot g(\lambda)}$.
+To generate random values $\lambda$ according to $\mathbb{P}\left(\lambda|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textrm{REG}}\right)$ 
+we generate values according to $g(\lambda)$, and values $v$ according to $\textrm{Unif}(0,1)$ so that we accept those $\lambda$ such that $v\leq \frac{f(\lambda)}{c\cdot g(\lambda)}$.
 
 To generate random values $N$ according to $\mathbb{P}\left(N|N^{\textrm{MNO}};N^{\textrm{REG}}\right)$ we generate values $\lambda$ and then the corresponding values $N$ according to the Poisson distribution with parameter $\lambda$.
 
@@ -455,7 +512,8 @@ For $v=\alpha + \beta$ we can also use prior uniform distributions with support 
 
 
 ### Triangular
-This can be considered a slight variant of the preceding priors. Instead of having a flat distribution along the support, we may single out a mode so that we have probability density functions as 
+This can be considered a slight variant of the preceding priors. 
+Instead of having a flat distribution along the support, we may single out a mode so that we have probability density functions as 
 
 ```{r, echo = FALSE}
 library(ggplot2)
@@ -485,7 +543,11 @@ ggplot(df, aes(x, y)) + geom_line() + scale_x_continuous(limits = c(0, 1)) + xla
 Triangular distributions can be easily generated. They can be used for modelling the local market shares $u$, the cell size $v$ and the hyperparameter $\lambda$.
 
 ### Gamma distribution
-The gamma distribution is another choice for modelling both the cell size $v$ and the hyperparameter $\lambda$.The reasoning is common to both cases. We can assume a parameterization $\Gamma(\alpha + 1, \xi^{*} / \alpha)$, where $\xi^{*}$ stands for the mode of the modelled variable ($v$ or $\lambda$) and $\alpha> 0$ determines the degree of concentration around the mode $\xi^{*}$ (see figure below).
+The gamma distribution is another choice for modelling both the cell size $v$ and the hyperparameter $\lambda$.
+The reasoning is common to both cases. 
+We can assume a parameterization $\Gamma(\alpha + 1, \xi^{*} / \alpha)$, where $\xi^{*}$ stands for the mode of the 
+modelled variable ($v$ or $\lambda$) and $\alpha> 0$ determines the degree of concentration 
+around the mode $\xi^{*}$ (see figure below).
 
 ```{r, echo = FALSE}
 alphas <- c(1, 5, 10, 100, 1000)
@@ -504,20 +566,41 @@ ggplot(df, aes(x, y, col = alpha, group = alpha)) + geom_line(aes(linetype = alp
 
 The choice of $\alpha$ must be guided by the data themselves. Thus we do not propose concrete methods until we practise the simulations.
 
-Let us remind that we are combining both aggregated mobile phone data and official data at a given time instant to infer the actual population size in each cell. Official data for a concrete time instant will certainly not represent the exact population size of each cell since both data sources work at very different time scales. However, we can assume that appropriately choosing the time instant we can expect a high correlation between the actual size and official data (see e.g. @Q2016). 
+Let us remind that we are combining both aggregated mobile phone data and official data 
+at a given time instant to infer the actual population size in each cell. Official data for a
+ concrete time instant will certainly not represent the exact population size of each cell 
+since both data sources work at very different time scales. However, we can assume that 
+appropriately choosing the time instant we can expect a high correlation between the actual size and official data (see e.g. @Q2016). 
 
 
-In this sense, for the simulated data that we will generate, for a given actual true value $N^{0}_{i}$ we will simulate a population register value $N^{\textrm{REG}_{i}}\simeq \lfloor N(\mu = N^{0}_{i}, \sigma = 10\%\cdot N^{0}_{i})\rfloor$. For the corresponding number of individuals detected through the mobile network, we will generate it assuming a proportion of detected individuals randomly between $15\%$ and $40\%$ as realistic figures (see e.g. @WP5Del11 to compare with market shares as an approximation to these figures).
+In this sense, for the simulated data that we will generate, for a given actual true 
+value $N^{0}_{i}$ we will simulate a population register value $N^{\textrm{REG}_{i}}\simeq \lfloor N(\mu = N^{0}_{i}, \sigma = 10\%\cdot N^{0}_{i})\rfloor$.
+ For the corresponding number of individuals detected through the mobile network, we will generate it assuming a proportion 
+ of detected individuals randomly between $15\%$ and $40\%$ as realistic figures (see e.g. @WP5Del11 to compare 
+ with market shares as an approximation to these figures).
 
 ## One cell
 
-Since the treatment of all cells is independent of each other, it is fundamental to get acquainted with the estimation process for a single cell. We investigate different combinations of priors and numerical regimes for $N^{\textrm{MNO}}$ and $N^{\textrm{REG}}$. In all cases we assume a priori $f_{3}\simeq\Gamma\left(\alpha + 1, \frac{N^{\textrm{Reg}}}{\alpha}\right)$.
+Since the treatment of all cells is independent of each other, it is fundamental to get acquainted 
+with the estimation process for a single cell. We investigate different combinations of priors and 
+numerical regimes for $N^{\textrm{MNO}}$ and $N^{\textrm{REG}}$. In all cases we assume a 
+priori $f_{3}\simeq\Gamma\left(\alpha + 1, \frac{N^{\textrm{Reg}}}{\alpha}\right)$.
 
-Firstly, we will investigate how the estimates vary in different realizations of the estimation procedure. Let us consider a true population size of $N^{(0)} = 100$. The population register gives $N^{\textrm{Reg}}=97$ assuming an error of $3\%$. Let us also consider the number of individuals detected by the mobile network as $N^{\textrm{MNO}} = 19$ assuming a proportion of detected individuals of around $20\%$.
+Firstly, we will investigate how the estimates vary in different 
+realizations of the estimation procedure. Let us consider a true population size of $N^{(0)} = 100$. 
+The population register gives $N^{\textrm{Reg}}=97$ assuming an error of $3\%$. 
+Let us also consider the number of individuals detected by the mobile network as $N^{\textrm{MNO}} = 19$ 
+assuming a proportion of detected individuals of around $20\%$.
 
-For the prior distribution of the proportion of detected individuals we will assume a weakly informative distribution $f_{u}=\textrm{Unif}(u_{m}, u_{M})$ with $u_{m}=0$ and $u_{M}=0.50$. For the prior distribution of the cell size we will assume a triangular distribution with parameters $v_{m}=87$, $v_{M}=107$, and $v^{*}=97$, assuming an (unknown) error of $10\%$ over the population register size. Later on we will study the effect of diverse choices on these priors.
+For the prior distribution of the proportion 
+of detected individuals we will assume a weakly informative distribution 
+$f_{u}=\textrm{Unif}(u_{m}, u_{M})$ with $u_{m}=0$ and $u_{M}=0.50$. For the prior 
+distribution of the cell size we will assume a triangular distribution with 
+parameters $v_{m}=87$, $v_{M}=107$, and $v^{*}=97$, assuming an (unknown) error of $10\%$ over 
+the population register size. Later on we will study the effect of diverse choices on these priors.
 
-We compute the estimates for values of $\alpha=1,10,100,1000$ to observe the effect of the amount of uncertainty in the population size (from more uncertainty to less uncertainty, respectively).
+We compute the estimates for values of $\alpha=1,10,100,1000$ to observe the effect of the amount of 
+uncertainty in the population size (from more uncertainty to less uncertainty, respectively).
 
 ```{r, cache = TRUE, echo = FALSE}
 library(data.table)
@@ -568,11 +651,16 @@ In the subsequent sections we will just compute one single estimate and vary the
 
 Let us now consider a range of values for the hyperparameters to observe the effects on the final estimate. We will choose $\alpha = 1$ as a weakly informative choice\footnote{The value of $\alpha$ will be later on better motivated when having data from several cells.}.
 
-For the intervals $(u_{m}, u_{M})$ we will choose as centres of the intervals the natural value $N^{\textrm{MNO}} / N^{\textrm{Reg}}$. As radii, we will progressively shorten the intervals starting from $r_{1}=min(N^{\textrm{MNO}} / N^{\textrm{Reg}}, 1- N^{\textrm{MNO}} / N^{\textrm{Reg}})$ down to $0.005$.
+For the intervals $(u_{m}, u_{M})$ we will choose as centres of the intervals the natural 
+value $N^{\textrm{MNO}} / N^{\textrm{Reg}}$. As radii, we will progressively shorten 
+the intervals starting from $r_{1}=min(N^{\textrm{MNO}} / N^{\textrm{Reg}}, 1- N^{\textrm{MNO}} / N^{\textrm{Reg}})$ down to $0.005$.
 
-For the intervals $(N_{m}, N_{M})$ we will choose as centres of the intervals the natural value $N^{\textrm{Reg}}$. As radii, we will progressively shorten the intervals starting from $R_{1}=\lfloor 0.25\cdot N^{\textrm{Reg}}\rfloor$ down to $1$.
+For the intervals $(N_{m}, N_{M})$ we will choose as centres of the intervals the 
+natural value $N^{\textrm{Reg}}$. As radii, we will progressively shorten the intervals starting from 
+$R_{1}=\lfloor 0.25\cdot N^{\textrm{Reg}}\rfloor$ down to $1$.
 
-The relative bias $\frac{\hat{N}-N^{\textrm{Reg}}}{N^{\textrm{Reg}}} \cdot 100$ for the posterior mean, median and mode estimates, respectively, for each pair of interval lengths $(u_{M}-u_{m}, N_{M} - N_{m})$ are:
+The relative bias $\frac{\hat{N}-N^{\textrm{Reg}}}{N^{\textrm{Reg}}} \cdot 100$ for 
+the posterior mean, median and mode estimates, respectively, for each pair of interval lengths $(u_{M}-u_{m}, N_{M} - N_{m})$ are:
 
 ```{r, eval=TRUE, cache=TRUE, echo = FALSE}
 library(data.table)
@@ -629,7 +717,8 @@ knitr::kable(relBias.Mode,
 
 ### $f_{1}\simeq\textrm{Unif}(u_{m}, u_{M})$, $f_{2}\simeq\textrm{triang}(N_{m}, N_{M}, N^{\textrm{Reg}})$
 
-We now carry out the same computation with the prior distribution for the actual population size $f_{2}$ being a triangular distribution. Its parameters will be $N_{m}$ and $N_{M}$ as in the preceding section and the mode as $N^{*}=N^{\textrm{Reg}}$.
+We now carry out the same computation with the prior distribution for the actual population size $f_{2}$ being a triangular distribution. 
+Its parameters will be $N_{m}$ and $N_{M}$ as in the preceding section and the mode as $N^{*}=N^{\textrm{Reg}}$.
 
 
 ```{r, eval=TRUE, cache=TRUE, echo = FALSE}
@@ -925,22 +1014,52 @@ knitr::kable(relBias.Mode,
 ## Several cells
 Since by design the estimation in each cell is independent of each other, the process for a grid of cells only entails longer computation times. However, having more information allows us to seek for more objective criteria to set the prior information.
 
-Regarding the prior distribution for the proportions of detected individuals $u_{i}$ we can consider the ratios $\frac{N_{i}^{\textrm{MNO}}}{N^{\textrm{Reg}}_{i}}$ as an initial guess as a highly probable value whose uncertainty will depend both on the process to obtain $N_{i}^{\textrm{MNO}}$ (in the preprocessing and aggregation stages of the whole process for mobile phone data; not considered here) and on the process to compile the population register figures $N_{i}^{\textrm{Reg}}$ (with non-sampling error considerations like measurement errors, processing errors, coverage, \dots). Any of the three prior distributions (uniform, triangular, gamma) can be used to express this uncertainty around $\frac{N_{i}^{\textrm{MNO}}}{N^{\textrm{Reg}}_{i}}$ and, if necessary, even more complex alternative possibilities can be built.
+Regarding the prior distribution for the proportions of detected individuals $u_{i}$ we can consider the 
+ratios $\frac{N_{i}^{\textrm{MNO}}}{N^{\textrm{Reg}}_{i}}$ as an initial guess as a highly probable 
+value whose uncertainty will depend both on the process to obtain $N_{i}^{\textrm{MNO}}$ 
+(in the preprocessing and aggregation stages of the whole process for mobile phone data; not considered here) 
+and on the process to compile the population register figures $N_{i}^{\textrm{Reg}}$ 
+(with non-sampling error considerations like measurement errors, processing errors, coverage, \dots). 
+Any of the three prior distributions (uniform, triangular, gamma) can be used to express this 
+uncertainty around $\frac{N_{i}^{\textrm{MNO}}}{N^{\textrm{Reg}}_{i}}$ and, if necessary, 
+even more complex alternative possibilities can be built.
 
-Regarding the prior distribution for the local cell size $v_{i}$ we can make exactly similar considerations around the value $N_{i}^{\textrm{Reg}}$ for each cell $i$ now only focusing on the process of construction of the population register.
+Regarding the prior distribution for the local cell size $v_{i}$ we can make exactly similar 
+considerations around the value $N_{i}^{\textrm{Reg}}$ for each cell $i$ now only focusing on the 
+process of construction of the population register.
 
-Finally, for the prior distribution for the parameter $\lambda_{i}$ we must clearly state how critical this choice is. If we choose $\alpha_{i}\gg 1$, we are expressing a high confidence on our population register as the true population at this instant of time. In this sense it seems advisable to be conservative and choose low values so that we do not artificially  \textquotedblleft force\textquotedblright\ the final estimates to be close to $N_{i}^{\textrm{Reg}}$. In the choice of $\alpha_{i}$ in the multiple cell case, however, we can make use of the grid construction and the distribution of $N_{i}^{\textrm{Reg}}$ to propose some prior values. The variance of $\Gamma(\alpha_{i} + 1, \frac{N^{\textrm{Reg}}_{i}}{\alpha_{i}})$ is $\frac{\alpha_{i} + 1}{\alpha_{i}^{2}}\cdot N^{\textrm{Reg}}_{i}$. Thus, under the assumption of having a regular grid over the population, we can equate $\frac{\alpha_{i} + 1}{\alpha_{i}^{2}}\cdot N^{\textrm{Reg}}=\frac{1}{N_{cells} - 1}\sum_{i=1}^{N_{cell}}\left(N_{i}^{\textrm{Reg}} - \bar{N}^{\textrm{Reg}}\right)^{2}$
- to have a first value (upper bound) for $\alpha\leq\min_{i}\alpha_{i}$. In case of an irregular grid (in terms of population size), we can think of some clustering analysis to carry out the same procedure. 
+Finally, for the prior distribution for the parameter $\lambda_{i}$ we must clearly state how 
+critical this choice is. If we choose $\alpha_{i}\gg 1$, we are expressing a high confidence on 
+our population register as the true population at this instant of time. In this sense it seems 
+advisable to be conservative and choose low values so that we do not artificially  \textquotedblleft force\textquotedblright\ 
+the final estimates to be close to $N_{i}^{\textrm{Reg}}$. In the choice of $\alpha_{i}$ in the 
+multiple cell case, however, we can make use of the grid construction and the distribution 
+of $N_{i}^{\textrm{Reg}}$ to propose some prior values. 
+The variance of $\Gamma(\alpha_{i} + 1, \frac{N^{\textrm{Reg}}_{i}}{\alpha_{i}})$ 
+is $\frac{\alpha_{i} + 1}{\alpha_{i}^{2}}\cdot N^{\textrm{Reg}}_{i}$. Thus, under the 
+assumption of having a regular grid over the population, we can equate 
+$\frac{\alpha_{i} + 1}{\alpha_{i}^{2}}\cdot N^{\textrm{Reg}}=\frac{1}{N_{cells} - 1}\sum_{i=1}^{N_{cell}}\left(N_{i}^{\textrm{Reg}} - \bar{N}^{\textrm{Reg}}\right)^{2}$
+ to have a first value (upper bound) for $\alpha\leq\min_{i}\alpha_{i}$. 
+ In case of an irregular grid (in terms of population size), we can think of 
+ some clustering analysis to carry out the same procedure. 
  
- In any case, we claim that one can envisage objective estimation processes for the prior hyperparameters so that final estimates are not based upon dangerously subjective
-beliefs.  In our view, this is another indication of why having knowledge about the preprocessing and aggregation phases in the whole process is important to arrive at final objective values to be considered official figures.
+ In any case, we claim that one can envisage objective estimation processes for the prior 
+ hyperparameters so that final estimates are not based upon dangerously subjective
+beliefs.  In our view, this is another indication of why having knowledge about the 
+preprocessing and aggregation phases in the whole process is important to arrive at 
+final objective values to be considered official figures.
 
 
 ### $f_{1}\simeq\textrm{Unif}(u_{m,i}, u_{M,i})$, $f_{2}\simeq\textrm{Unif}(N_{m,i}, N_{M,i})$
 
-Let us now consider a range of values for the hyperparameters to observe the effects on the final estimate. For the intervals $(u_{m,i}, u_{M,i})$ we will choose as centres of the intervals the natural values $N^{\textrm{MNO}}_{i} / N^{\textrm{Reg}}_{i}$. As radii, we will progressively shorten the intervals starting from $r_{1,i}=min(N^{\textrm{MNO}}_{i} / N^{\textrm{Reg}}_{i}, 1- N^{\textrm{MNO}}_{i} / N^{\textrm{Reg}}_{i})$ down to $0.005$.
+Let us now consider a range of values for the hyperparameters to observe the effects on the final estimate. 
+For the intervals $(u_{m,i}, u_{M,i})$ we will choose as centres of the intervals the 
+natural values $N^{\textrm{MNO}}_{i} / N^{\textrm{Reg}}_{i}$. 
+As radii, we will progressively shorten the intervals starting from $r_{1,i}=min(N^{\textrm{MNO}}_{i} / N^{\textrm{Reg}}_{i}, 1- N^{\textrm{MNO}}_{i} / N^{\textrm{Reg}}_{i})$ down to $0.005$.
 
-For the intervals $(N_{m,i}, N_{M,i})$ we will choose as centres of the intervals the natural values $N^{\textrm{Reg}}_{i}$. As radii, we will progressively shorten the intervals starting from $R_{1,i}=\lfloor 0.25\cdot N^{\textrm{Reg}}_{i}\rfloor$ down to $1$.
+For the intervals $(N_{m,i}, N_{M,i})$ we will choose as centres of the intervals the natural 
+values $N^{\textrm{Reg}}_{i}$. As radii, we will progressively shorten the intervals starting 
+from $R_{1,i}=\lfloor 0.25\cdot N^{\textrm{Reg}}_{i}\rfloor$ down to $1$.
 
 The distribution of the relative bias $\frac{\hat{N}_{i}-N^{\textrm{Reg}}_{i}}{N^{\textrm{Reg}}} \cdot 100$ for the posterior mean, median and mode estimates, respectively, for all pairs of interval lengths $(u_{M,i}-u_{m,i}, N_{M,i} - N_{m,i})$ and all cells ($N_{c} = 50$) are:
 
