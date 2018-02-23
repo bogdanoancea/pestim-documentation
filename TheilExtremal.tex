@@ -963,7 +963,141 @@ ggplot(N0cells, aes(x = N0)) +
 
 The actual estimation is done using \texttt{rN0()} function.
 
+
+Now we can provide two kind of time evolutions for the population in each cell. On the one hand, we can generate simulated populations conditioned upon their estimated initial size $\widehat{N}_{i}(t_{0})$. On the other hand, we can provide these simulated populations unconditioned upon their estimated initial size but starting from the input data themselves (thus uncertainty in the initial population estimate is included).
+
+In the first case, taking the mean of the preceding populations as estimates for the initial population of each cell we obtain the following evolving simulated populations in each cell (in dashed lines the assumed true values of the simulated population):
+
+\begin{verbatim}
+N0 <- N0cells[, list(Mean = round(mean(N0))), by = 'cellID'][['Mean']]
+nT <- length(unique(Sim.PopMob$ID_T)) - 1
+matList <- lapply(2:(nT + 1), function(i){
+    output <- dcast(Sim.PopMob[ID_T == i], ID_CELL_INI ~ ID_CELL_FIN, value.var = 'N_MNO_1')
+    output[, ID_CELL_INI := NULL]
+    return(output)
+})
+
+DistributNames <- rep('triang', 12)
+Variation <- rep(list(list(cv = 0.10)), 12)
+NtcondN0 <- rbindlist(lapply(seq(along = matList), function(i){
+    output <- rNtcondN0(nSim, N0, as.matrix(matList[[i]]),  DistributNames, Variation)
+    output <- as.data.table(output)
+    setnames(output, as.character(1:dim(output)[2]))
+    output[, sim := 1:.N]
+    output <- melt(output, id.vars = 'sim',  variable.name = 'Cell', value.name = 'N0')
+    output[, Time := factor(i)]
+    return(output)
+}))
+
+N0True <- readRDS('N:/UDMTD/UDTMDCOM/BigData/MetodologiaDatosTelefonia/TruePop.rds')
+N0True <- N0True[Time != 1][, Time := factor(Time - 1)]
+ggplot(NtcondN0, aes(x = N0, fill = Time)) + 
+          geom_histogram(binwidth = 50, alpha=.5, position="identity") + 
+          geom_vline(data = N0True, aes(xintercept = N0True, color = Time), linetype = 'dashed', size = 0.5) + 
+          facet_grid(factor(Cell) ~ ., scales="free") +
+          xlab('\n Posterior populations per cell') + ylab('Counts (different scales)\n') +
+          ggtitle(paste0('Simulated posterior populations for each cell\n (Conditioned on initial population)')) +
+          theme(plot.title = element_text(face = 'bold', size = 14, hjust = 0.5), axis.text.y = element_blank())  
+\end{verbatim}
+
+By comparing both figures we can detect how the uncertainty in the estimation of the initial population size propagates along the evolving estimates of the population size of each cell. In particular, in cells 6 and 7 we can observe how the uncertainty in the simulated initial populations provide rather inaccurate estimates for later time periods. 
+
+Using again the posterior mean as estimator of the population in each cell, we have the following evolutions:
+
+\begin{verbatim}
+N0dt <- data.table(N = N0, Time = 0, Cell = seq(along=N0))
+seriesNt <- NtcondN0[, list(N = round(mean(N0))), by = c('Time', 'Cell')]
+setcolorder(N0dt, names(seriesNt))
+seriesNt <- rbindlist(list(N0dt, seriesNt))
+NTrue <- readRDS('N:/UDMTD/UDTMDCOM/BigData/MetodologiaDatosTelefonia/TruePop.rds')
+NTrue[, Time := factor(Time - 1)]
+setnames(NTrue, 'N0True', 'trueN')
+seriesNt <- merge(seriesNt, NTrue)
+seriesNt <- melt(seriesNt, id.vars = c('Time', 'Cell'), value.name = 'Population', variable.name = 'Series')
+ggplot(seriesNt, aes(x = Time, y = Population, color = Series, group = Series)) + 
+           geom_line() + 
+           facet_grid(factor(Cell) ~ ., scales="free") +
+           scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) +
+           xlab('\n Time Period') + ylab('Population (different scales; watch out the origins)\n') +
+           ggtitle(paste0('Estimated populations for each cell\n (Conditioned on initial population)')) +
+           scale_color_manual(labels = c(expression(widehat(N)), expression(N^{(0)})), values = c('red', 'blue')) +
+           theme(plot.title = element_text(face = 'bold', size = 14, hjust = 0.5), axis.text.y = element_text(size = 5))
+\end{verbatim}
  
+ 
+ In terms of the relative bias, this comparison can be depicted as follows:
+ 
+ \begin{verbatim}
+ seriesNt.dcast <- dcast(seriesNt, Time + Cell ~ Series, value.var = 'Population')
+ seriesNt.dcast[, relBias := round((N - trueN) / trueN * 100, 2)][, (c('N', 'trueN')) := NULL]
+ seriesNt.melt <-  melt(seriesNt.dcast, id = c('Time', 'Cell'))
+ ggplot(seriesNt.melt, aes(x = Time, y = value, group = variable, color = variable)) + 
+            geom_line() + 
+             facet_grid(Cell ~ .) +
+             geom_hline(yintercept = 0, size = 0.3, linetype = 'dotted') + 
+             xlab('\n Time Period') + ylab('Relative bias\n') +
+             ggtitle(paste0('Relative bias of estimated population size\n (conditioned on initial population)')) +
+             theme(plot.title = element_text(face = 'bold', size = 12, hjust = 0.5), axis.text.y = element_text(size = 5), legend.position="none")
+ \end{verbatim}
+ 
+ 
+ 
+We can produce estimates unconditioned on the initial estimate of the population in each cell. Now the uncertainty in the estimation of the initial population of each cell is incorporated into the estimation process for later time periods.
+ 
+\begin{verbatim}
+nT <- length(unique(Sim.PopMob$ID_T)) - 1
+matList <- lapply(2:(nT + 1), function(i){
+    output <- dcast(Sim.PopMob[ID_T == i], ID_CELL_INI ~ ID_CELL_FIN, value.var = 'N_MNO_1')
+    output[, ID_CELL_INI := NULL]
+    output <- output / Scale
+    return(output)
+})
+
+DistributNames <- rep('triang', 12)
+Variation <- rep(list(list(cv = 0.10)), 12)
+Nt <- rbindlist(lapply(seq(along = matList), function(i){
+    output <- rNt(nSim, as.matrix(matList[[i]]),  nReg, fu, fv, flambda, DistributNames, Variation, scale = Scale)
+    output[, Time := factor(i)]
+    return(output)
+}))
+
+NTrue <- readRDS('N:/UDMTD/UDTMDCOM/BigData/MetodologiaDatosTelefonia/TruePop.rds')
+NTrue[, Time := factor(Time - 1)]
+setnames(Nt, c('sim', 'Cell', 'N', 'Time'))
+seriesNt <- Nt[, list(N = round(mean(N))), by = c('Time', 'Cell')]
+Nt0dt <- data.table(N = N0, Time = 0, Cell = seq(along = N0))
+setcolorder(Nt0dt, c('Time', 'Cell', 'N'))
+seriesNt <- rbindlist(list(Nt0dt, seriesNt))
+seriesNt[, Cell := as.factor(Cell)]
+seriesNt <- merge(seriesNt, NTrue)
+setnames(seriesNt, 'N0True', 'NTrue')
+seriesNt <- melt(seriesNt, id.vars = c('Time', 'Cell'), value.name = 'Population', variable.name = 'Series')
+ggplot(seriesNt, aes(x = Time, y = Population, color = Series, group = Series)) + 
+           geom_line() + 
+           facet_grid(factor(Cell) ~ ., scales="free") +
+           scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) +
+           xlab('\n Time Period') + ylab('Population (different scales; watch out the origins)\n') +
+           ggtitle(paste0('Estimated populations for each cell\n (Unconditioned on initial population)')) +
+           scale_color_manual(labels = c(expression(widehat(N)), expression(N^{(0)})), values = c('red', 'blue')) +
+           theme(plot.title = element_text(face = 'bold', size = 14, hjust = 0.5), axis.text.y = element_text(size = 5))
+\end{verbatim}
+
+
+In terms of the relative bias, this comparison can be depicted as follows:
+\begin{verbatim}
+seriesNt.dcast <- dcast(seriesNt, Time + Cell ~ Series, value.var = 'Population')
+seriesNt.dcast[, relBias := round((N - NTrue) / NTrue * 100, 2)][, (c('N', 'NTrue')) := NULL]
+seriesNt.melt <-  melt(seriesNt.dcast, id = c('Time', 'Cell'))
+ggplot(seriesNt.melt, aes(x = Time, y = value, group = variable, color = variable)) + 
+          geom_line() + 
+          facet_grid(Cell ~ .) +
+          geom_hline(yintercept = 0, size = 0.3, linetype = 'dotted') + 
+          xlab('\n Time Period') + ylab('Relative bias\n') +
+          ggtitle(paste0('Relative bias of estimated population size\n (conditioned on initial population)')) +
+          theme(plot.title = element_text(face = 'bold', size = 12, hjust = 0.5), axis.text.y 
+          element_text(size = 5), legend.position="none")
+\end{verbatim}
+
 \begin{thebibliography}{99}
 
 \bibitem{methodology}
