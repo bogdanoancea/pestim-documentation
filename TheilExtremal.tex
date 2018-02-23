@@ -16,14 +16,10 @@
 }
 
 
-
-
-
 \title{pestim - an R package to estimate population counts from aggregated mobile phone data}
 \author{David Salgado\footnote{Department of Methodology and Development of Statistical Production, Statistics Spain (INE)}  and who else to add as author??}
 
 \date{}
-
 
 
 \begin{document}
@@ -111,15 +107,13 @@ $\mathbb{P}\left(\mathbf{N}|\mathbf{N}^{\textrm{MNO}};\mathbf{N}^{\textrm{REG}}\
 that can be used to assess the uncertainty in the output estimates.
 This process can be represented schematically as shown in figure \ref{Tool}.
 
-\begin{figure}
-\centering
-\makebox[\textwidth][c]{\includegraphics[width=1\textwidth, natwidth=600, natheight=127, width=12cm, height=3cm]{Tool.png}}%
-%\hbox{\includegraphics [width=10cm, height=3cm, natwidth=600, natheight=127] {Tool.png}} 
-%\includegraphics[width=0.7\textwidth, natwidth=300, natheight=70]{Tool.png}
-\caption{A diagram for the process of estimating population counts using mobile phone and official population data.}
-\label{Tool}
-\end{figure}
 
+\begin{figure}[htbp]
+\centering
+\includegraphics[scale=0.75]{Tool.png}
+\caption{Schematic diagram for the output intended using mobile phone and official population data.}
+\label{Tool} 
+\end{figure}
 
 The main idea of the model is to emulate the ecological sampling setting in which 
 the number of detected individuals in each cell follows a binomial distribution $Bin(N_{i}, p_{i})$ 
@@ -440,7 +434,7 @@ Notice how this final estimate inherits the original difference between $N^{(0)}
 For the intervals $(u_{m}, u_{M})$ we will choose as centres of the intervals the value $N^{\textrm{MNO}} / N^{\textrm{Reg}}$ and as radii, 
 we will progressively shorten the intervals starting from 
 $r_{1}=min(N^{\textrm{MNO}} / N^{\textrm{Reg}}, 1- N^{\textrm{MNO}} / N^{\textrm{Reg}})$ down to $0.005$ and we will
-use a number $nPar=10$ for $u$.
+use a number of $nPar=10$ points for $u$.
 
 For the intervals $(N_{m}, N_{M})$ we will choose as centres of the intervals the 
 natural value $N^{\textrm{Reg}}$ and as radii, we will progressively shorten the intervals starting from 
@@ -850,8 +844,126 @@ the case of a single cell. Since this process is straightforward we will not sho
 
 \section{Estimates along a sequence of time}
 
+In this section we show how to extend the previous estimates along a sequence of time instants. This process is represented in figure  \ref{Tool2}.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=0.35]{Tool2.png}
+	\caption{A diagram of the estimation process for the targt population using mobile phone and official population data.}
+	\label{Tool2} 
+\end{figure}
 
 
+We get as input data for the final inference stage the number of individuals $N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})$ moving from territorial cell $i$ to territorial cell $j$ in the time interval $(t_{0}, t_{n})$ according to the mobile telecommunication network. These data will be combined with official data and at the end we will  provide the following outputs:
+
+\begin{itemize}
+	\item the probability distribution of actual individuals in each territorial cell $i$ at the initial time $t_{0}$
+	\item the probability distribution of actual individuals at the time instants $t_{n}$ for $n=1,2,\dots$.
+\end{itemize}  
+
+We make the two prior assumptions:
+
+\begin{enumerate}
+	\item To combine both aggregated mobile phone and official data we assume that a given time instant $t_{0}$ both population figures in each territorial cell can be equated to some extent. For simplicity we will take $N_{i}^{\textrm{Reg}}$ as a fixed quantity without a prior distribution representing uncertainty in its knowledge. Therefore $N_{i}^{\textrm{Reg}}$ will be fixed external parameters in the model. 
+	\item The movements of individuals across the territory (from one cell to aother cell) is assumed to be independent of being subscribers of a given Mobile Network Operator or another.
+\end{enumerate}
+
+The following hierchical model supports these hypotheses. Let $p_{ij}(t_{0}, t_{n})$ denote the probability for an individual to move from cell $i$ to cell $j$ in the time interval $(t_{0}, t_{n})$. Let $N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})$ the number of individuals moving from cell $i$ to cell $j$ according to the network. As usual, we denote $N_{i\cdot}^{\textrm{MNO}}(t_{0})=\sum_{j=1}^{I}N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})$. 
+
+\begin{subequations}
+	\begin{align}
+	\label{eq:Model2Ini}N_{i}(t_{n}) & = \left[ N_{i}(t_{0}) + \sum_{\substack{j=1\\j\neq i}}^{I}p_{ji}(t_{0}, t_{n})N_{j}(t_{0})-\sum_{\substack{j=1\\j\neq i}}^{I}p_{ij}(t_{0}, t_{n}) N_{i}(t_{0})\right ],\quad i=1,\dots,I\\ 
+	\label{eq:Model2Mid}\mathbf{p}_{i\cdot}(t_{0}, t_{n})& \simeq\textrm{Dir}\left(\alpha_{i1}(t_{0}, t_{n}), \dots, \alpha_{iI}(t_{0}, t_{n})\right),\quad \mathbf{p}_{i\cdot}(t_{0}, t_{n})\perp\mathbf{p}_{j\cdot}(t_{0}, t_{n}),\quad i\neq j=1,\dots,I\\
+	\label{eq:Model2Fin}\alpha_{ij}(t_{0}, t_{n})&\simeq f_{\alpha ij}\left(\alpha_{ij}; \frac{N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})}{N_{i\cdot}^{\textrm{MNO}}(t_{0})}\right), \quad i=1,\dots,I\\
+	\label{eq:Model1Ini}N_{i}^{\textrm{MNO}}(t_{0})&\simeq\textrm{Bin}\left(N_{i}(t_{0}), p_{i}(t_{0})\right),\qquad N_{i}^{\textrm{MNO}}(t_{0})\perp N_{j}^{\textrm{MNO}}(t_{0}),\quad i\neq j=1,\dots,I\\
+	N_{i}(t_{0})&\simeq\textrm{Po}\left(\lambda_{i}(t_{0})\right),\qquad N_{i}(t_{0})\perp N_{j}(t_{0}),\quad i\neq j=1,\dots,I\\
+	p_{i}(t_{0})&\simeq\textrm{Beta}\left(\alpha_{i}(t_{0}),\beta_{i}(t_{0})\right),\qquad p_{i}(t_{0})\perp p_{j}(t_{0})\quad i\neq j=1,\dots,I\\
+	\left(\alpha_{i}(t_{0}), \beta_{i}(t_{0})\right)&\simeq \frac{f_{ui}\left(\frac{\alpha_{i}}{\alpha_{i}+\beta_{i}}; \frac{N_{i}^{\textrm{MNO}}(t_{0})}{N_{i}^{\textrm{REG}}(t_{0})}\right)\cdot f_{vi}\left(\alpha_{i}+\beta_{i}; N_{i}^{\textrm{REG}}(t_{0})\right)}{\alpha_{i}+\beta_{i}}, (\alpha_{i}(t_{0}),\beta_{i}(t_{0}))\perp(\alpha_{j}(t_{0}),\beta_{j}(t_{0})),\quad i\neq j=1,\dots,I\\
+	\label{eq:Model1Fin}\lambda_{i}(t_{0})&\simeq f_{\lambda i}(\lambda_{i}; N_{i}^{\textrm{REG}}(t_{0}))\quad (\lambda_{i}(t_{0}) > 0,\quad \lambda_{i}(t_{0})\perp\lambda_{j}(t_{0})), \quad i=1,\dots,I,
+	\end{align}
+\end{subequations}
+
+\noindent where 
+
+\begin{itemize}
+	\item $[\cdot]$ denotes the nearest integer function;
+	\item $f_{\alpha ij}$ stands for the probability density function of the parameters $\alpha_{ij}$. The notation $f_{\alpha ij}\left(\alpha_{ij}; \frac{N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})}{N_{i\cdot}^{\textrm{MNO}}(t_{0})}\right)$ is meant to indicate that $\frac{N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})}{N_{i\cdot}^{\textrm{MNO}}(t_{0})}$ should be taken as the mode of the density function;
+	\item $f_{ui}$ stands for the probability density function of the parameter $u$ (see the preceding document on the model) in cell $i$ with mode $\frac{N_{i}^{\textrm{MNO}}(t_{0})}{N_{i}^{\textrm{REG}}(t_{0})}$;
+	\item $f_{vi}$ stands for the probability density function of the parameter $v$ (see the preceding document on the model) in cell $i$ with mode $N_{i}^{\textrm{REG}}(t_{0})$;
+	\item $f_{\lambda i}$ stands for the probability density function of the parameter $\lambda$ (see the preceding document on the model) in cell $i$ with mode $N_{i}^{\textrm{REG}}(t_{0})$. 
+\end{itemize}
+
+
+Equations \eqref{eq:Model1Ini} to \eqref{eq:Model1Fin} add time dependence to the previous model.  Equations \eqref{eq:Model2Ini}, \eqref{eq:Model2Mid}, \eqref{eq:Model2Fin} take care of the time evolution of the estimates.
+
+Equation \eqref{eq:Model2Ini} states that the number of individuals in a cell $i$ at time $t_{n}$ equals the initial number of individuals plus those arriving from other cells in the given time interval minus those leaving for other cells in the same time interval. The number of individuals arriving and leaving are estimated using the transition probability among cells.
+
+We modelled these transition probabilities for a given cell $i$ as a multivariate random variable with a Dirichlet distribution with parameters $\alpha_{i1},\dots,\alpha_{iI}$. These parameters  are given unimodal prior distributions $f_{\alpha_{ij}}$ with mode in $\frac{N_{ij}^{\textrm{MNO}}}{N_{i\cdot}^{\textrm{MNO}}}$ according to our second working assumption.
+
+The computation of the probability functions $\mathbb{P}\left(N_{i}(t_{n})\big|N^{\textrm{MNO}}(t_{0}, t_{1})\right)$ for each cell $i$ will allow us to choose an estimator as, e.g., the posterior mean, posterior median or posterior mode. The computation is conducted empirically in three steps:
+
+\begin{enumerate}
+	\item The initial population value $N_{i}(t_{0})$ is generated for all cells $i=1,\dots, I$ according to the model using $N_{i\cdot}^{\textrm{MNO}}(t_{0})$ as input data and choosing weakly informative priors $f_{ui}$, $f_{vi}$ and $f_{\lambda i}$.
+	\item A transition probability matrix $[p_{ij}(t_{0}, t_{n})]$ is generated according to the model using $N^{\textrm{MNO}}(t_{0}, t_{n})$ as input data and choosing weakly informative priors $f_{\alpha ij}$.
+	\item These generated quantities are used in formula \eqref{eq:Model2Ini} to generate $N_{i}(t_{1})$ for all cells $i=1,\dots,I$.
+\end{enumerate}
+
+Following these steps we can generate an empirical posterior distribution of values $N_{i}(t_{n})$ for each cell $i$. Then we can use these distributions to provide a point estimate according to its mean, median, or mode.
+
+
+\section{An example}
+
+We generate a population with a territory divided into $12$ cells. At $4$ succesive time intervals the individuals follow their own trajectories so that the population in each cell evolves according to actual transition matrices $N_{ij}(t_{n-1}, t_{n})$, $n=1,2,3,4$. At the initial time instant $t_{0}$ we also have the population register figures for each cell $N_{i}^{\textrm{Reg}}(t_{0})$ which can be equated to the initial real population $N_{i}(t_{0})$, although they are not completely equal due to nonsampling errors.
+
+We also generate the transition matrices for each time interval $n=1,2,3,4$ for the individuals $N_{ij}^{\textrm{MNO}}(t_{n-1}, t_{n})$ detected with the network.
+
+Firstly, we generate the estimates $N_{i}(t_{0})$ for the initial time instant, as we already did in a previous section.
+
+\begin{verbatim}
+library(pestim)
+library(data.table)
+library(ggplot2)
+
+Sim.PopMob <- readRDS('N:/UDMTD/UDTMDCOM/BigData/MetodologiaDatosTelefonia/Sim.PopMob.rds')
+InitialPop <- Sim.PopMob[ID_T == 1 & ID_CELL_FIN == ID_CELL_INI]
+
+Scale <- 1e3
+nMNO_ini <- InitialPop[['N_MNO_1']] / Scale
+nReg <- InitialPop[['N_REG']] / Scale
+u0 <- InitialPop$N_MNO_1 / InitialPop$N_REG
+fu <- lapply(u0, function(u){
+    umin <- max(0, u - 0.10 * u)
+    umax <- min(1, u + 0.10 * u)
+    output <- list('triang', xMin = umin, xMax = umax, xMode = u)
+    return(output)
+})
+
+v0 <- nReg
+fv <- lapply(v0, function(u){
+    umin <- max(0, u - 0.10 * u)
+    umax <- u + 0.10 * u
+    output <- list('triang', xMin = umin, xMax = umax, xMode = u)
+    return(output)
+})
+
+alpha <- 1 / 0.1**2 - 1
+flambda <- lapply(v0, function(v){list('gamma', shape = 1 + alpha, scale = v / alpha)})
+
+nSim <- 10000
+N0cells <- rN0(nSim, nMNO_ini, nReg, fu, fv, flambda, scale = Scale)
+ggplot(N0cells, aes(x = N0)) + 
+           geom_histogram(binwidth = 50) +
+           geom_vline(aes(xintercept = nReg), color = 'red') +
+           facet_grid(factor(cellID) ~ ., scales="free") +
+           xlab('Posterior populations per cell') + ylab('Counts (different scales)\n') +
+           ggtitle(paste0('Simulated posterior populations for each cell\n')) +
+           theme(plot.title = element_text(face = 'bold', size = 14, hjust = 0.5), axis.text.y =
+           element_blank())
+\end{verbatim}
+
+The actual estimation is done using \texttt{rN0()} function.
+
+ 
 \begin{thebibliography}{99}
 
 \bibitem{methodology}
