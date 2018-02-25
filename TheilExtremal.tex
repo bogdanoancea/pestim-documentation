@@ -450,12 +450,67 @@ where \texttt{dpois} is the probability density function of a Poisson distributi
 $S$ is defined in equation \ref{Sdef1}, \ref{Sdef2}. 
 
 $S$ is computed using the Monte Carlo method described in section \ref{model}. The points needed by this method (see eq.\ref{montecarlo}) are generated using \texttt{genUV()} function and $\Phi$ function from eq. \ref{montecarlo} is evaluated by a call to \texttt{Phi()} 
-from \texttt{pestim}. \texttt{Phi()} multiplies a ratio of two $Beta$ functions (eq. \ref{ratioB}) computed by \texttt{ratioBeta()} function and the confluent hypergeometric function which is given by a call to \texttt{kummer()} function. This later function was implemented in C++ and called using \texttt{RCpp} package because it is numerically intensive and the performance of a pure R implementation is far from the C++ implementation in terms of computing time.
+from \texttt{pestim}. \texttt{Phi()} multiplies a ratio of two $Beta$ functions (eq. \ref{ratioB}) computed by \texttt{ratioBeta()} function and the confluent hypergeometric function which is given by a call to \texttt{kummer()} function. 
+\texttt{ratioBeta()} computes the ratio of two two $Beta$ functions using the difference between their logarithms and then exponentiating the result to avoid numerical overflow. The logarithms of the $Beta$ functions are computed using the \texttt{lbeta()} from the base R library.
+
+\texttt{kummer()}  was implemented in C++ and called using \texttt{Rcpp} package because it is numerically intensive and the performance of a pure R implementation is far from the C++ implementation in terms of computing time.  It is a partial implementation of the confluent hypergeometric function ${}_{1}F_{1}(z ; a; b)$. Since is one of the most time consuming function from \texttt{pestim} package we proived here few details about the implementation that we used in the current verision of the package.
+The confluent hypergeometric function is defined as:
+
+\begin{equation}\label{hyper1}
+\mathbf{M}(z; a; b)= \sum_{j=0}^{\infty} \frac{(a)_{j}}{\Gamma(b+j)} \times \frac{z^{j}}{j!}
+\end{equation}
+
+\noindent where $(a)_{j}$ is the Pochhammer symbol defined by:
+\begin{equation}
+a_{0} = 1, \quad  (a)_{j} = a \times (a+1) \times \cdots (a+j-1), \qquad j=1,2,\cdots
+\end{equation}
+
+The sum in equation \ref{hyper1} always converge, function $\mathbf{M}$ being analytic throughout the complex plane $\mathbb{C}$. Next, we define:
+\begin{equation}
+{}_{1}F_{1}(z; a; b) = \Gamma(b) \mathbf{M}(z; a; b) = \sum_{j-0}^{\infty}\frac{(a)_{j}}{(b)_{j}} \times \frac{z^{j}}{j!}
+\end{equation}
+
+\noindent which is also denoted by M(a;b;z) and is referred to as the confluent hypergeometric function.
+
+We followed the work described in \cite{hyper} and divided the computation of ${}_{1}F_{1}(z ; a; b)$ according to the value of $z$ in two different cases: for $z < 80$ we used a Taylor series expantion approach, while for $z \ge 80$ we've made use of Watson’s lemma \cite{watson}.
+Thus, in the first case we computed the confluent hypergeometric function as:
+
+\begin{equation}
+{}_{1}F_{1}(z; a; b) \approx S_{N} = \sum_{j=0}^{N} \frac{(a)_{j}}{(b)_{j}} \frac{z^{j}}{j!} = \sum_{j=0}^{N} A_{j}
+\end{equation}
+
+The actual C++ implementation is based on the following equations:
+\begin{align}
+A_{0} &=1 \\
+S_{0} &=A_{0} \\
+A_{j+1} &=A_{j} \frac{a+j}{b+j} \frac{z}{j+1} \\
+S_{j+1} &=S_{j}+A_{j+1} \quad j=0,1,2,\cdots
+\end{align}
+
+The stopping criterion for the iterative procedure was set as $\frac{A_{j+1}}{S_{j}} < tol$ where $A_j$ and $S_j$ were previously defined.
+
+In case of $z \ge 80$, according to Watson’s lemma, for $z \in \Re$ we can write:
+
+\begin{equation}\label{watson}
+\mathbf{M}(z; a; b) \sim \frac{e^z \cdot z^{a-b}}{\Gamma(a)} \sum_{j=0}^{\infty} \frac{(b-a)_j \cdot (1-a)_j}{j! \cdot z^j}
+\end{equation}
+
+\noindent and, consequently
+
+\begin{equation}
+{}_{1}F_{1}(z; a; b) = \Gamma(b) \cdot \frac{e^z \cdot z^{a-b}}{\Gamma(a)} \sum_{j=0}^{\infty} \frac{(b-a)_j \cdot (1-a)_j}{j! \cdot z^j}
+\end{equation}
+
+Firstly, we computed the sum from equation \ref{watson} taking the same strategy for the stopping criterion as in the previuos case (i.e. $\frac{A_{j+1}}{S_{j}} < tol$ where $A_j = \frac{(b-a)_j \cdot (1-a)_j}{j! \cdot z^j}, S_j=\sum_{j=0}^{N} A_j)$ then we multiplied the sum 
+with $\frac{e^z \cdot z^{(a-b)} \cdot \Gamma(b)}{\Gamma(a)}$.
+
+An interested reader could consult the C++ implementation of the above formulas in \texttt{Kummer.cpp} file from the \texttt{src} directory of \texttt{pestim} source package. For efficiency reasons, considering that calling a C++ function from the R environment has an important overhead, to minimize the number of functions calls we pass three vectors $z$, $a$, and $b$ to \texttt{Kummer()} function and, in turn, it returns the value of the confluent hypergeometric function for all the elements in the input parameters.
+
+
 
 We can observe how the more precise the prior value of $\lambda = N^{\textrm{Reg}}$ is, the more precise 
 the final estimate around $N^{\textrm{Reg}}$ will result. 
 Notice how this final estimate inherits the original difference between $N^{(0)}$ and $N^{\textrm{Reg}}$, as expected.
-
 
 
 \subsubsection{$f_{1}\simeq\textrm{Unif}(u_{m}, u_{M})$, $f_{2}\simeq\textrm{Unif}(N_{m}, N_{M})$}
@@ -1055,8 +1110,8 @@ ggplot(NtcondN0, aes(x = N0, fill = Time)) +
           axis.text.y = element_blank())  
 \end{verbatim}
 
-In this code, \texttt{rNtcondN0()} function generates the random values for $N_{t}$ (the posterior distribution) conditional on initial population count. This function uses \texttt{rmatProb()}  to generate the probabilities according to a Dirichlet distribution with parameters generated by \texttt{alphaPrior()}. 
-These parameters are generated with distributions whose names are taken from the input parameter \texttt{distNames} and construct the corresponding prior distribution for each cell $j$ with mode at $u_{j}^{*}=N_{j}$. The rest of parameters of the distribution are computed according to the dispersion parameters specified in texttt{variation}.
+In this code, \texttt{rNtcondN0()} function generates the random values for $N_{t}$ (the posterior distribution) conditional on initial population count. This function uses \texttt{rmatProb()}  to generate the transition probabilities according to a Dirichlet distribution with parameters generated by \texttt{alphaPrior()}. 
+These parameters are generated with distributions whose names are taken from the input parameter \texttt{distNames} and construct the corresponding prior distribution for each cell $j$ with mode at $u_{j}^{*}=N_{j}$. The rest of parameters of the distribution are computed according to the dispersion parameters specified in \texttt{variation}.
 
 By comparing both figures we can detect how the uncertainty in the estimation of the initial population size propagates along the evolving estimates of the population size of each cell. In cells 6 and 7 we can observe how the uncertainty in the simulated initial populations provide rather inaccurate estimates for later time periods. 
 
@@ -1104,12 +1159,13 @@ In terms of the relative bias, this comparison can be depicted as follows:
              axis.text.y = element_text(size = 5), legend.position="none")
  \end{verbatim}
  
-We can produce estimates unconditioned on the initial estimate of the population in each cell. The uncertainty in the estimation of the initial population of each cell is incorporated into the estimation process for later time periods.
+We can also produce estimates unconditioned on the initial estimate of the population in each cell. The uncertainty in the estimation of the initial population of each cell is incorporated into the estimation process for later time periods.
  
 \begin{verbatim}
 nT <- length(unique(MobPop$ID_T)) - 1
 matList <- lapply(2:(nT + 1), function(i){
-    output <- dcast(MobPop[ID_T == i], ID_CELL_INI ~ ID_CELL_END, value.var = 'N_MNO_1')
+    output <- dcast(MobPop[ID_T == i], ID_CELL_INI ~ ID_CELL_END, 
+                              value.var = 'N_MNO_1')
     output[, ID_CELL_INI := NULL]
     output <- output / Scale
     return(output)
@@ -1168,6 +1224,7 @@ ggplot(seriesNt.melt, aes(x = Time, y = value, group = variable, color = variabl
           element_text(size = 5), legend.position="none")
 \end{verbatim}
 
+
 \begin{thebibliography}{99}
 
 \bibitem{methodology}
@@ -1208,6 +1265,10 @@ American Mathematical Monthly 109, pp. 217-234, March, 2002.
 \bibitem{Dev86a}
 ~Devroye, L., Non-uniform random variable generation, Springer, 1986.
 
+
+\bibitem{hyper}
+~Pearson, J.W., ~Olver, S., Porter, A.M., Numerical methods for the computation of the confluent and Gauss hypergeometric functions, Numerical Algorithms 74(3), August, 2016.
+
 \bibitem{Q2016}
 ~De Meersman, F., ~Seynaeve, G., ~Debusschere, M., ~Lusyne, P., ~Dewitte, P., 
 ~Baeyens, Y., ~Wirthmann, A., ~Demunter, C., ~Reis, F., ~Reuter, H.I.,
@@ -1217,6 +1278,9 @@ presented at Q2016 Conference, June, 2016.
 \bibitem{WP5Del11}
 ~ESSnet on Big Data WP5, Current status of access to mobile phone data in the ESS, 2017.
  
+\bibitem{watson}
+~Watson, G.N., The Harmonic Functions Associated with the Parabolic Cylinder, Proceedings
+ of the London Mathematical Society, 2, 1918, pp. 116–148.
 \end{thebibliography}
 
 \end{document}
