@@ -15,12 +15,10 @@
 	bottom=25mm
 }
 
-
 \title{pestim - an R package to estimate population counts from aggregated mobile phone data}
 \author{David Salgado\footnote{Department of Methodology and Development of Statistical Production, Statistics Spain (INE)}  and who else to add as author??}
 
 \date{}
-
 
 \begin{document}
 \maketitle
@@ -86,12 +84,17 @@ install_github("MobilePhoneESSnetBigData/pestim")
 
 Since it contains \texttt{C++} code, the user need to install \texttt{Rtools} under Windows 
 enviroment or to have a  \texttt{C++}  compiler under Linux or Mac OS X environments.
-
+We also provide Windows binaries and Mac OS X bianries for this package that can be downloaded from:
+\begin{itemize}
+	\item for Windows binary package: \url{https://github.com/MobilePhoneESSnetBigData/Estimation_Population/blob/master/pestim_0.1.0.zip}.
+	\item for Mac OS X binary package: \url{https://github.com/MobilePhoneESSnetBigData/Estimation_Population/blob/master/pestim_0.1.0.tgz}.
+\end{itemize}
 \section{The hierarchical model}\label{model}
 
 In this section we will give a short description of the theoretical model 
 underlaying the \texttt{pestim} R package for estimation of the population 
-counts at a given time moment.
+counts at a given time moment. More detailed documents about this model can be downloaded from 
+\url{https://github.com/MobilePhoneESSnetBigData/Estimation_Population}.
 
 A first input of the model is 
 $\mathbf{N}^{\textrm{MNO}}=(N_{1}^{\textrm{MNO}}, \dots, N_{I}^{\textrm{MNO}})^{T}$ which 
@@ -411,6 +414,14 @@ ggplot(results, aes(x = variable, y = value)) +
            theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = .5))
 \end{verbatim}
 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.75]{estimation.eps}
+	\caption{The uncertainty in population estimation.}
+	\label{one}
+\end{figure}
+
+
 The actual computation of the population estimation is done by \texttt{postN0()} function that takes the following parameters:
 \begin{itemize}
 \item nMNO - the number of the individuals detected in the actual cell according to the mobile network operator
@@ -445,12 +456,7 @@ We can observe how the more precise the prior value of $\lambda = N^{\textrm{Reg
 the final estimate around $N^{\textrm{Reg}}$ will result. 
 Notice how this final estimate inherits the original difference between $N^{(0)}$ and $N^{\textrm{Reg}}$, as expected.
 
-\begin{figure}
-	\centering
-	\includegraphics[scale=0.75]{gamma.eps}
-	\caption{The uncertainty in population estimation.}
-	\label{one}
-\end{figure}
+
 
 \subsubsection{$f_{1}\simeq\textrm{Unif}(u_{m}, u_{M})$, $f_{2}\simeq\textrm{Unif}(N_{m}, N_{M})$}
 
@@ -929,7 +935,7 @@ Equations \eqref{eq:Model1Ini} to \eqref{eq:Model1Fin} add time dependence to th
 
 Equation \eqref{eq:Model2Ini} states that the number of individuals in a cell $i$ at time $t_{n}$ equals the initial number of individuals plus those arriving from other cells in the given time interval minus those leaving for other cells in the same time interval. The number of individuals arriving and leaving are estimated using the transition probability among cells.
 
-We modelled these transition probabilities for a given cell $i$ as a multivariate random variable with a Dirichlet distribution with parameters $\alpha_{i1},\dots,\alpha_{iI}$. These parameters  are given unimodal prior distributions $f_{\alpha_{ij}}$ with mode in $\frac{N_{ij}^{\textrm{MNO}}}{N_{i\cdot}^{\textrm{MNO}}}$ according to our second working assumption.
+We modelled these transition probabilities for a given cell $i$ as a multivariate random variable with a Dirichlet distribution with parameters $\alpha_{i1},\dots,\alpha_{iI}$ (in fact, Dirichlet distributions are commonly used as prior distributions in Bayesian statistics). These parameters  are given unimodal prior distributions $f_{\alpha_{ij}}$ with mode in $\frac{N_{ij}^{\textrm{MNO}}}{N_{i\cdot}^{\textrm{MNO}}}$ according to our second working assumption.
 
 The computation of the probability functions $\mathbb{P}\left(N_{i}(t_{n})\big|N^{\textrm{MNO}}(t_{0}, t_{1})\right)$ for each cell $i$ will allow us to choose an estimator as, e.g., the posterior mean, posterior median or posterior mode. The computation is conducted empirically in three steps:
 
