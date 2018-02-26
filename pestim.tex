@@ -74,9 +74,9 @@ based upon the populations generated with the preceding functions.
 Examples of these functions are \texttt{postN0, postNt, postNtcondN0}.
 \end{itemize}
 
-\texttt{pestim} package is freely available under the \texttt{GPL3} and \texttt{EUPL} lincese 
+\texttt{pestim} package is freely available under the \texttt{GPL3} and \texttt{EUPL} licenses
 at the following address: \url{https://github.com/MobilePhoneESSnetBigData/pestim}. It requires 
-at least R version 3.3.0, but upgrading R to the newst version is highly recommended.
+at least R version 3.3.0, but upgrading R to the newest version is highly recommended.
 It can be installed using \texttt{install\_github()} function from \texttt{devtools} package:
 \begin{verbatim}
 library(devtools)
@@ -85,7 +85,7 @@ install_github("MobilePhoneESSnetBigData/pestim")
 
 Since it contains \texttt{C++} code, the user need to install \texttt{Rtools} under Windows 
 enviroment or to have a  \texttt{C++}  compiler under Linux or Mac OS X environments.
-We also provide Windows binaries and Mac OS X bianries for this package that can be downloaded from:
+We also provide Windows binaries and Mac OS X binaries for this package that can be downloaded from:
 \begin{itemize}
 	\item for Windows binary package: \url{https://github.com/MobilePhoneESSnetBigData/Estimation_Population/blob/master/pestim_0.1.0.zip}.
 	\item for Mac OS X binary package: \url{https://github.com/MobilePhoneESSnetBigData/Estimation_Population/blob/master/pestim_0.1.0.tgz}.
@@ -303,7 +303,7 @@ used with real data.
 	\item gamma distribution;
 \end{itemize}
 
-The uniform distribution is well know and functions that implement the density, distribution funtion, 
+The uniform distribution is well know and functions that implement the density, distribution function, 
 quantile function and random variable generation are provided by the standard \texttt{R} distribution.
 
 The triangular distribution can be used to for modelling the local market shares $u$, 
@@ -474,7 +474,7 @@ the $Beta$ functions are computed using the \texttt{lbeta()} from the base R lib
 intensive and the performance of a pure R implementation is far from the C++ implementation in terms of 
 computing time.  It is a partial implementation of the confluent hypergeometric function ${}_{1}F_{1}(z ; a; b)$. Since 
 is one of the most time consuming function from \texttt{pestim} package we proived here few details about the 
-implementation that we used in the current verision of the package.
+implementation that we used in the current version of the package.
 The confluent hypergeometric function is defined as:
 
 \begin{equation}\label{hyper1}
@@ -1166,8 +1166,10 @@ ggplot(N0cells, aes(x = N0)) +
            element_blank())
 \end{verbatim}
 
-The actual estimation is done using \texttt{rN0()} function which generates a series of random points according to the posterior probability distribution of the number of individuals . The results are presented in figure \ref{time1}. This simulation
-was run under Linux and Mac OS X environments succesfully. Under Windows it may be possible to get a memory allocation error.
+The actual estimation is done using \texttt{rN0()} function which generates a series of random points according to the posterior probability distribution of the number of individuals . The results are presented in 
+figure \ref{time1}. This simulation
+was run under Linux and Mac OS X environments succesfully. Under Windows it may be 
+possible to get a memory allocation error.
 In this case the value of the variable $nSim$ should be decreased. 
 
 \begin{figure}
@@ -1255,8 +1257,8 @@ NTrue <- MobPop
 NTrue[, Time := factor(Time - 1)]
 setnames(NTrue, 'N0True', 'trueN')
 seriesNt <- merge(seriesNt, NTrue)
-seriesNt <- melt(seriesNt, id.vars = c('Time', 'Cell'), value.name = 'Population', 
-                   variable.name = 'Series')
+seriesNt <- melt(seriesNt, id.vars = c('Time', 'Cell'), value.name = 
+                   'Population', variable.name = 'Series')
 ggplot(seriesNt, aes(x = Time, y = Population, color = Series, group = Series)) + 
            geom_line() + 
            facet_grid(factor(Cell) ~ ., scales="free") +
@@ -1269,7 +1271,8 @@ ggplot(seriesNt, aes(x = Time, y = Population, color = Series, group = Series)) 
            axis.text.y = element_text(size = 5))
 \end{verbatim}
 
-The results of the time evolution are depicted in figure \ref{time3}. In terms of the relative bias, this comparison is presented in figure \ref{time4}.
+The results of the time evolution are depicted in figure \ref{time3}. In terms of the relative bias, 
+this comparison is presented in figure \ref{time4}.
 
 \begin{figure}
 	\centering
@@ -1281,15 +1284,14 @@ The results of the time evolution are depicted in figure \ref{time3}. In terms o
  
  \begin{verbatim}
  seriesNt.dcast <- dcast(seriesNt, Time + Cell ~ Series, value.var = 'Population')
- seriesNt.dcast[, relBias := round((N - trueN) / trueN * 100, 2)][, (c('N', 'trueN')) := NULL]
+ seriesNt.dcast[, relBias := round((N - trueN) / trueN * 100, 2)][, 
+                        (c('N', 'trueN')) := NULL]
  seriesNt.melt <-  melt(seriesNt.dcast, id = c('Time', 'Cell'))
  ggplot(seriesNt.melt, aes(x = Time, y = value, group = variable, color = variable)) + 
-            geom_line() + 
+             geom_line() + 
              facet_grid(Cell ~ .) +
              geom_hline(yintercept = 0, size = 0.3, linetype = 'dotted') + 
              xlab('\n Time Period') + ylab('Relative bias\n') +
-             ggtitle(paste0('Relative bias of estimated population size\n 
-             (conditioned on initial population)')) +
              theme(plot.title = element_text(face = 'bold', size = 12, hjust = 0.5), 
              axis.text.y = element_text(size = 5), legend.position="none")
  \end{verbatim}
@@ -1297,13 +1299,13 @@ The results of the time evolution are depicted in figure \ref{time3}. In terms o
 \begin{figure}
 	\centering
 	\includegraphics[scale=0.85]{time4.eps}
-	\caption{Estimated population for each cell conditioned on initial population for 4 time instants}
+	\caption{Relative bias of estimated population for each cell conditioned on initial population for 4 time instants}
 	\label{time4} 	
 \end{figure}
- 
+
 We can also produce estimates unconditioned on the initial estimate of the population in each cell. 
 The uncertainty in the estimation of the initial population of each cell is incorporated into the estimation 
-process for later time periods.
+process for later time periods. The results of the estimations are presented in figure \ref{time5}.
  
 \begin{verbatim}
 nT <- length(unique(MobPop$ID_T)) - 1
@@ -1342,32 +1344,57 @@ ggplot(seriesNt, aes(x = Time, y = Population, color = Series, group = Series)) 
            scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) +
            xlab('\n Time Period') + 
            ylab('Population (different scales; watch out the origins)\n') +
-           ggtitle(paste0('Estimated populations for each cell\n 
-           (Unconditioned on initial population)')) +
-           scale_color_manual(labels = c(expression(widehat(N)), expression(N^{(0)})), 
+           scale_color_manual(labels = c(expression(widehat(N)), 
+           expression(N^{(0)})), 
            values = c('red', 'blue')) +
            theme(plot.title = element_text(face = 'bold', size = 14, hjust = 0.5), 
            axis.text.y = element_text(size = 5))
 \end{verbatim}
 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.85]{time5.eps}
+	\caption{Relative bias of estimated population for each cell unconditioned on initial population for 4 time instants}
+	\label{time5} 	
+\end{figure}
 
-In terms of the relative bias, this comparison can be depicted as follows:
+In terms of the relative bias, this comparison is depicted in figure \ref{time6}
+
 \begin{verbatim}
 seriesNt.dcast <- dcast(seriesNt, Time + Cell ~ Series, value.var = 'Population')
-seriesNt.dcast[, relBias := round((N - NTrue) / NTrue * 100, 2)][, (c('N', 'NTrue')) := NULL]
+seriesNt.dcast[, relBias := round((N - NTrue) / 
+                       NTrue * 100, 2)][, (c('N', 'NTrue')) := NULL]
 seriesNt.melt <-  melt(seriesNt.dcast, id = c('Time', 'Cell'))
 ggplot(seriesNt.melt, aes(x = Time, y = value, group = variable, color = variable)) + 
           geom_line() + 
           facet_grid(Cell ~ .) +
           geom_hline(yintercept = 0, size = 0.3, linetype = 'dotted') + 
           xlab('\n Time Period') + ylab('Relative bias\n') +
-          ggtitle(paste0('Relative bias of estimated population size\n 
-          (conditioned on initial population)')) +
           theme(plot.title = element_text(face = 'bold', size = 12, hjust = 0.5), 
           axis.text.y =
           element_text(size = 5), legend.position="none")
 \end{verbatim}
 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.85]{time6.eps}
+	\caption{Relative bias of estimated population for each cell unconditioned on initial population for 4 time instants}
+	\label{time6} 	
+\end{figure}
+
+\section{Further developments}
+
+\texttt{pestim} package contains computationally intensive functions that needs to be optimized in the next versions
+to keep the running time in acceptable limits even for complex data. The optimizations will be done at two levels:
+\begin{itemize}
+	\item each function will be profiled and then improved from the point of view of runnig time. Neverless, a balance will be kept between the readability of the code and it's performances;
+	\item considering that nowadays computers have multicore processors, we will introduce a level of parallelization
+	in the internal code of the package. We will also show how parallelization can be introduced at the level of user code (like the examples presented in this document).
+\end{itemize}
+
+The package will also be enhanced in the future with some visualisations capabilities such as maps, grids etc.
+Other future improvements will consider the underlaying theoretical model:modelling the uncertainty in population register, 
+introducing some spatial correlation between cells and time correlation between succesive periods.
 
 \begin{thebibliography}{99}
 
@@ -1408,7 +1435,6 @@ American Mathematical Monthly 109, pp. 217-234, March, 2002.
 
 \bibitem{Dev86a}
 ~Devroye, L., Non-uniform random variable generation, Springer, 1986.
-
 
 \bibitem{hyper}
 ~Pearson, J.W., ~Olver, S., Porter, A.M., Numerical methods for the computation of the confluent and Gauss 
