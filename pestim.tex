@@ -6,6 +6,7 @@
 \usepackage{amsthm}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{fancyvrb}
 \usepackage{geometry}
 \geometry{
 	a4paper,
@@ -871,7 +872,7 @@ with a mean of 19 and standard deviartion of 2. These values can be replaced wit
 The values for posterior 
 distribution of the population is again obtained by a call to \texttt{postN0()} function. 
 
-\begin{verbatim}
+\begin{Verbatim}
 library(pestim)
 library(data.table)
 library(ggplot2)
@@ -971,40 +972,40 @@ ggplot(relBias.Mode.df, aes(x = ' ', y = N)) + geom_boxplot() +
            ggtitle(paste0('Relative bias (%) distributions of the ', 
            nCell, ' cells\n')) +
            theme(plot.title = element_text(face = 'bold', size = 14, hjust = 0.5))
-\end{verbatim}
+\end{Verbatim}
 
 
-\begin{figure}
+\begin{figure}[ht]
 \centering
-\includegraphics[scale=0.85]{many-cells-mean.eps}
+\includegraphics[scale=0.75]{many-cells-mean.eps}
 \caption{The distribution of the relative bias for the posterior mean.}
 \label{manycellsmean} 	
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[scale=0.85]{many-cells-median.eps}
+\includegraphics[scale=0.75]{many-cells-median.eps}
 \caption{The distribution of the relative bias for the posterior median.}
 \label{manycellsmedian} 	
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[scale=0.85]{many-cells-mode.eps}
+\includegraphics[scale=0.75]{many-cells-mode.eps}
 \caption{The distribution of the relative bias for the posterior mode.}
 \label{manycellssmode} 	
 \end{figure}
 
-
-The same combinations for distributions used for $f_{1}$ and $f_{2}$ can be done in the case of several cell like in the case of a single cell. Since this process is straightforward we will not show here each combination.
+The same combinations for distributions used for $f_{1}$ and $f_{2}$ can be used 
+in the case of several cells like in the case of a single cell. Since this process is straightforward we will not show here each combination.
 
 
 \section{Estimates along a sequence of time}
 
-In this section we show how to extend the previous estimates along a sequence of time instants. 
-This process is represented schematically  in figure \ref{Tool2}.
+In this section we show how to extend the previous estimation process along a sequence of time instants. 
+Figure \ref{Tool2} presents schematically this process. 
 
-\begin{figure}[htbp]
+\begin{figure}
 	\centering
 	\includegraphics[scale=0.35]{Tool2.png}
 	\caption{A diagram of the estimation process for the target population using mobile phone and official 
@@ -1386,13 +1387,12 @@ ggplot(seriesNt.melt, aes(x = Time, y = value, group = variable, color = variabl
 \texttt{pestim} package contains computationally intensive functions that needs to be optimized in the next versions
 to keep the running time in acceptable limits even for complex data. The optimizations will be done at two levels:
 \begin{itemize}
-	\item each function will be profiled and then improved from the point of view of runnig time. Neverless, a balance will be kept between the readability of the code and it's performances;
-	\item considering that nowadays computers have multicore processors, we will introduce a level of parallelization
-	in the internal code of the package. We will also show how parallelization can be introduced at the level of user code (like the examples presented in this document).
+	\item each function will be profiled and then improved from the point of view of running time. Neverless, a balance will be kept between the readability of the code and it's performances;
+	\item considering that nowadays almost all computers have multicore processors, we will introduce a level of parallelization
+	in the internal code of the package. We will also show how parallelization can be introduced at the level of the user code (like the examples presented in this document).
 \end{itemize}
 
-The package will also be enhanced in the future with some visualisations capabilities such as maps, grids etc.
-Other future improvements will consider the underlaying theoretical model:modelling the uncertainty in population register, 
+The package will also be enhanced in the future with some visualisations capabilities such as maps, grids etc. Other future improvements will consider the underlaying theoretical model:modelling the uncertainty in population register, 
 introducing some spatial correlation between cells and time correlation between succesive periods.
 
 \begin{thebibliography}{99}
