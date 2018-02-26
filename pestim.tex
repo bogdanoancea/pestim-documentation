@@ -1032,7 +1032,7 @@ We make two prior assumptions:
 	being subscribers of a given MNO or another.
 \end{enumerate}
 
-The following hierchical model supports these hypotheses. Let $p_{ij}(t_{0}, t_{n})$ denote the probability 
+The following hierarchical model supports these hypotheses. Let $p_{ij}(t_{0}, t_{n})$ denote the probability 
 for an individual to move from cell $i$ to cell $j$ in the time interval $(t_{0}, t_{n})$. Let $N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})$ the 
 number of individuals moving from cell $i$ to cell $j$ according to the network. We denote $N_{i\cdot}^{\textrm{MNO}}(t_{0})=\sum_{j=1}^{I}N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})$. 
 
@@ -1103,8 +1103,8 @@ also have the population register figures for each cell $N_{i}^{\textrm{Reg}}(t_
 be equated to the initial real population $N_{i}(t_{0})$, although they are not completely 
 equal due to nonsampling errors.
 
-We also generate the transition matrices for each time interval $n=1,2,3,4$ for the i
-ndividuals $N_{ij}^{\textrm{MNO}}(t_{n-1}, t_{n})$ detected with the network.
+We also generate the transition matrices for each time interval $n=1,2,3,4$ for the 
+individuals $N_{ij}^{\textrm{MNO}}(t_{n-1}, t_{n})$ detected with the network.
 
 \texttt{pestim} contains a dataset \texttt{MobPop} that provides population counts moving from 
 each pair of cells at succesive time instants for a simulated true population, a corresponding official
@@ -1164,7 +1164,14 @@ ggplot(N0cells, aes(x = N0)) +
            element_blank())
 \end{verbatim}
 
-The actual estimation is done using \texttt{rN0()} function.
+The actual estimation is done using \texttt{rN0()} function. The results are presented in figure \ref{time1}.
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.85]{}time1.eps}
+	\caption{Simulated posterior populations for each cell.}
+	\label{time1} 	
+\end{figure}
 
 
 Now we can provide two kind of time evolutions for the population in each cell. On the one hand, 
