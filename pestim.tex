@@ -16,7 +16,7 @@
 }
 
 \title{pestim - an R package to estimate population counts from aggregated mobile phone data}
-\author{David Salgado\footnote{Department of Methodology and Development of Statistical Production, Statistics Spain (INE)}  and who else to add as author??}
+\author{David Salgado\footnote{Department of Methodology and Development of Statistical Production, Statistics Spain (INE)} , Bogdan Oancea \footnote{National Statistics Institute of Romania} and who else to add as author??}
 
 \date{}
 
@@ -89,6 +89,13 @@ We also provide Windows binaries and Mac OS X bianries for this package that can
 	\item for Windows binary package: \url{https://github.com/MobilePhoneESSnetBigData/Estimation_Population/blob/master/pestim_0.1.0.zip}.
 	\item for Mac OS X binary package: \url{https://github.com/MobilePhoneESSnetBigData/Estimation_Population/blob/master/pestim_0.1.0.tgz}.
 \end{itemize}
+
+These binary packages can be downloaded and installed with the normal command:
+\begin{verbatim}
+install.package("pestim_0.1.0.zip")
+\end{verbatim}
+but in this case the user should also install all the dependencies.
+
 \section{The hierarchical model}\label{model}
 
 In this section we will give a short description of the theoretical model 
@@ -437,23 +444,36 @@ The actual computation of the population estimation is done by \texttt{postN0()}
 
 In this example we used the default values for \texttt{n, scale, relTol, nSim, nStrata} parameters.
 
-This function generates a $n$ random values for population according to the posterior distribution by calling \texttt{rN0()} function. The posterior distribution used to generates random numbers is a Poisson distribution (see the second row from model  \ref{model1}) . In turn, \texttt{rN0()} calls \texttt{rlambda()} to generate these points. 
+This function generates a $n$ random values for population according to the posterior distribution by calling \texttt{rN0()} function. 
+The posterior distribution used to generates random numbers is a Poisson distribution (see the second row from model  
+\ref{model1}) . In turn, \texttt{rN0()} calls \texttt{rlambda()} to generate these points. 
 
 \texttt{rlambda()} generates the points according to the accept-reject method using as candidate
-distribution a Cauchy distribution whose parameters are taken from the prior distributions and the mode of the posterior distribution of the $\lambda$ parameter as is described at the end of section \ref{model}.
-\texttt{rlambda()}  first computes the mode for the posterior distribution of $\lambda$ using \texttt{modeLambda()} function and then apply the acception-rejection method. 
+distribution a Cauchy distribution whose parameters are taken from the prior distributions and the mode of 
+the posterior distribution of the $\lambda$ parameter as is described at the end of section \ref{model}.
+\texttt{rlambda()}  first computes the mode for the posterior distribution of $\lambda$ using 
+\texttt{modeLambda()} function and then apply the acception-rejection method. 
 This latter function uses the posterior density function 
 of the parameter ${\lambda}$ in the hierarchical model implemented in our package by \texttt{dlambda()}
 function. This computes the unnormalized posterior density function of the parameter ${\lambda}$ as 
  ${f(\lambda\big | N^{\textrm{MNO}}; N^{\textrm{Nreg}})\propto f(\lambda)\cdot \textrm{dpois}(N^{\textrm{MNO}}; \lambda)\cdot S(\lambda; N^{\textrm{MNO}}, N^{\textrm{Nreg}}), }$
-where \texttt{dpois} is the probability density function of a Poisson distribution and is implemented in the standard \texttt{R} distribution and
-$S$ is defined in equation \ref{Sdef1}, \ref{Sdef2}. 
+where \texttt{dpois} is the probability density function of a Poisson distribution and is implemented i
+n the standard \texttt{R} distribution and $S$ is defined in equation \ref{Sdef1}, \ref{Sdef2}. 
 
-$S$ is computed using the Monte Carlo method described in section \ref{model}. The points needed by this method (see eq.\ref{montecarlo}) are generated using \texttt{genUV()} function and $\Phi$ function from eq. \ref{montecarlo} is evaluated by a call to \texttt{Phi()} 
-from \texttt{pestim}. \texttt{Phi()} multiplies a ratio of two $Beta$ functions (eq. \ref{ratioB}) computed by \texttt{ratioBeta()} function and the confluent hypergeometric function which is given by a call to \texttt{kummer()} function. 
-\texttt{ratioBeta()} computes the ratio of two two $Beta$ functions using the difference between their logarithms and then exponentiating the result to avoid numerical overflow. The logarithms of the $Beta$ functions are computed using the \texttt{lbeta()} from the base R library.
+$S$ is computed using the Monte Carlo method described in section \ref{model}. The points needed by this 
+method (see eq.\ref{montecarlo}) are generated using \texttt{genUV()} function and $\Phi$ function 
+from eq. \ref{montecarlo} is evaluated by a call to \texttt{Phi()} 
+from \texttt{pestim}. \texttt{Phi()} multiplies a ratio of two $Beta$ functions (eq. \ref{ratioB}) computed 
+by \texttt{ratioBeta()} function and the confluent hypergeometric function which is given by a call to \texttt{kummer()} function. 
+\texttt{ratioBeta()} computes the ratio of two two $Beta$ functions using the difference between 
+their logarithms and then exponentiating the result to avoid numerical overflow. The logarithms of 
+the $Beta$ functions are computed using the \texttt{lbeta()} from the base R library.
 
-\texttt{kummer()}  was implemented in C++ and called using \texttt{Rcpp} package because it is numerically intensive and the performance of a pure R implementation is far from the C++ implementation in terms of computing time.  It is a partial implementation of the confluent hypergeometric function ${}_{1}F_{1}(z ; a; b)$. Since is one of the most time consuming function from \texttt{pestim} package we proived here few details about the implementation that we used in the current verision of the package.
+\texttt{kummer()}  was implemented in C++ and called using \texttt{Rcpp} package because it is numerically 
+intensive and the performance of a pure R implementation is far from the C++ implementation in terms of 
+computing time.  It is a partial implementation of the confluent hypergeometric function ${}_{1}F_{1}(z ; a; b)$. Since 
+is one of the most time consuming function from \texttt{pestim} package we proived here few details about the 
+implementation that we used in the current verision of the package.
 The confluent hypergeometric function is defined as:
 
 \begin{equation}\label{hyper1}
@@ -465,14 +485,17 @@ The confluent hypergeometric function is defined as:
 a_{0} = 1, \quad  (a)_{j} = a \times (a+1) \times \cdots (a+j-1), \qquad j=1,2,\cdots
 \end{equation}
 
-The sum in equation \ref{hyper1} always converge, function $\mathbf{M}$ being analytic throughout the complex plane $\mathbb{C}$. Next, we define:
+The sum in equation \ref{hyper1} always converge, function $\mathbf{M}$ being analytic 
+throughout the complex plane $\mathbb{C}$. Next, we define:
 \begin{equation}
 {}_{1}F_{1}(z; a; b) = \Gamma(b) \mathbf{M}(z; a; b) = \sum_{j-0}^{\infty}\frac{(a)_{j}}{(b)_{j}} \times \frac{z^{j}}{j!}
 \end{equation}
 
 \noindent which is also denoted by M(a;b;z) and is referred to as the confluent hypergeometric function.
 
-We followed the work described in \cite{hyper} and divided the computation of ${}_{1}F_{1}(z ; a; b)$ according to the value of $z$ in two different cases: for $z < 80$ we used a Taylor series expantion approach, while for $z \ge 80$ we've made use of Watson’s lemma \cite{watson}.
+We followed the work described in \cite{hyper} and divided the computation of ${}_{1}F_{1}(z ; a; b)$ according to 
+the value of $z$ in two different cases: for $z < 80$ we used a Taylor series expantion approach, 
+while for $z \ge 80$ we've made use of Watson’s lemma \cite{watson}.
 Thus, in the first case we computed the confluent hypergeometric function as:
 
 \begin{equation}
@@ -487,7 +510,8 @@ A_{j+1} &=A_{j} \frac{a+j}{b+j} \frac{z}{j+1} \\
 S_{j+1} &=S_{j}+A_{j+1} \quad j=0,1,2,\cdots
 \end{align}
 
-The stopping criterion for the iterative procedure was set as $\frac{A_{j+1}}{S_{j}} < tol$ where $A_j$ and $S_j$ were previously defined.
+The stopping criterion for the iterative procedure was set as $\frac{A_{j+1}}{S_{j}} < tol$ 
+where $A_j$ and $S_j$ were previously defined.
 
 In case of $z \ge 80$, according to Watson’s lemma, for $z \in \Re$ we can write:
 
@@ -501,15 +525,20 @@ In case of $z \ge 80$, according to Watson’s lemma, for $z \in \Re$ we can wri
 {}_{1}F_{1}(z; a; b) = \Gamma(b) \cdot \frac{e^z \cdot z^{a-b}}{\Gamma(a)} \sum_{j=0}^{\infty} \frac{(b-a)_j \cdot (1-a)_j}{j! \cdot z^j}
 \end{equation}
 
-Firstly, we computed the sum from equation \ref{watson} taking the same strategy for the stopping criterion as in the previuos case (i.e. $\frac{A_{j+1}}{S_{j}} < tol$ where $A_j = \frac{(b-a)_j \cdot (1-a)_j}{j! \cdot z^j}, S_j=\sum_{j=0}^{N} A_j)$ then we multiplied the sum 
+Firstly, we computed the sum from equation \ref{watson} taking the same strategy for the stopping 
+criterion as in the previuos case (i.e. $\frac{A_{j+1}}{S_{j}} < tol$ where $A_j = \frac{(b-a)_j \cdot (1-a)_j}{j! \cdot z^j}, S_j=\sum_{j=0}^{N} A_j)$ then we multiplied the sum 
 with $\frac{e^z \cdot z^{(a-b)} \cdot \Gamma(b)}{\Gamma(a)}$.
 
-An interested reader could consult the C++ implementation of the above formulas in \texttt{Kummer.cpp} file from the \texttt{src} directory of \texttt{pestim} source package. For efficiency reasons, considering that calling a C++ function from the R environment has an important overhead, to minimize the number of functions calls we pass three vectors $z$, $a$, and $b$ to \texttt{Kummer()} function and, in turn, it returns the value of the confluent hypergeometric function for all the elements in the input parameters.
+An interested reader could consult the C++ implementation of the above formulas in \texttt{Kummer.cpp} 
+file from the \texttt{src} directory of \texttt{pestim} source package. For efficiency reasons, considering 
+that calling a C++ function from the R environment has an important overhead, to minimize the number 
+of functions calls we pass three vectors $z$, $a$, and $b$ to \texttt{Kummer()} function and, in turn, it 
+returns the value of the confluent hypergeometric function for all the elements in the input parameters. 
+The  implementation will be further optimized in the next versions of the \texttt{pestim} package.
 
 
-
-We can observe how the more precise the prior value of $\lambda = N^{\textrm{Reg}}$ is, the more precise 
-the final estimate around $N^{\textrm{Reg}}$ will result. 
+Going back to our example, we can observe how the more precise the prior value of $\lambda = N^{\textrm{Reg}}$ is, 
+the more precise  the final estimate around $N^{\textrm{Reg}}$ will result. 
 Notice how this final estimate inherits the original difference between $N^{(0)}$ and $N^{\textrm{Reg}}$, as expected.
 
 
@@ -529,7 +558,8 @@ interval lengths $(u_{M}-u_{m}, N_{M} - N_{m})$ we will estimate the population 
 bias $\frac{\hat{N}-N^{\textrm{Reg}}}{N^{\textrm{Reg}}} \cdot 100$ for 
 the posterior mean, median and mode estimates. The following piece of code does this estimation (to keep
 the length of this document reasonable we don't reproduce here the actual numerical results).
-One can note that this code is similar with the previous example, the estimation being computed with a call to \texttt{postN0()} function, and only the prior distributions are different.
+One can note that this code is similar with the previous example, the estimation being computed 
+with a call to \texttt{postN0()} function, and only the prior distributions are different.
 
 \begin{verbatim}
 library(pestim)
@@ -786,7 +816,8 @@ relBias.Mode <- round((results.Mode - nReg) / nReg * 100, 1)
 
 \subsection{Estimation for several cells}
 
-Obtaining estimations for the target population for a grid of cells is similar to the process for a single cell since the estimation in each cell is independent of each other.
+Obtaining estimations for the target population for a grid of cells is similar to the process for a single cell 
+since the estimation in each cell is independent of each other.
 
 We can consider the ratios $\frac{N_{i}^{\textrm{MNO}}}{N^{\textrm{Reg}}_{i}}$ 
 as an initial guess for the proportions of detected individuals $u_{i}$ 
@@ -805,7 +836,8 @@ The prior distribution for the parameter $\lambda_{i}$ is very important.
 If we choose $\alpha_{i}\gg 1$, this means a high confidence on 
 the population register as the true population. It is advisable to be conservative 
 and choose low values so that we do not artificially  \textquotedblleft force\textquotedblright\ 
-the final estimates to be close to $N_{i}^{\textrm{Reg}}$. In the choice of $\alpha_{i}$ we can make use of the grid construction and the distribution 
+the final estimates to be close to $N_{i}^{\textrm{Reg}}$. In the choice of $\alpha_{i}$ we can make 
+use of the grid construction and the distribution 
 of $N_{i}^{\textrm{Reg}}$ to propose some prior values. 
 
 The variance of $\Gamma(\alpha_{i} + 1, \frac{N^{\textrm{Reg}}_{i}}{\alpha_{i}})$ 
@@ -814,7 +846,8 @@ assumption of having a regular grid over the population, we can equate
 $\frac{\alpha_{i} + 1}{\alpha_{i}^{2}}\cdot N^{\textrm{Reg}}=\frac{1}{N_{cells} - 1}\sum_{i=1}^{N_{cell}}\left(N_{i}^{\textrm{Reg}} - \bar{N}^{\textrm{Reg}}\right)^{2}$
 to have a first value (upper bound) for $\alpha\leq\min_{i}\alpha_{i}$. 
 
-The estimation processes for the prior hyperparameters are very important if we want to obtain final estimates not based upon subjective beliefs.
+The estimation processes for the prior hyperparameters are very important if we want to obtain 
+final estimates not based upon subjective beliefs.
 
 In the following we will show an example how to estimate the population in $N_{c}=50$ cells, 
 and we will consider a range of values for the hyperparameters to observe the effects on the final estimate.
@@ -827,8 +860,15 @@ from $R_{1,i}=\lfloor 0.25\cdot N^{\textrm{Reg}}_{i}\rfloor$ down to $1$. We wil
 of $nPar=5$ values for each interval.
 
 The following piece of code computes and displays the distribution of the relative 
-bias $\frac{\hat{N}_{i}-N^{\textrm{Reg}}_{i}}{N^{\textrm{Reg}}} \cdot 100$ for the posterior mean, median and mode estimates, respectively, 
-for all pairs of interval lengths $(u_{M,i}-u_{m,i}, N_{M,i} - N_{m,i})$ and all cells. The values for posterior distribution of the population is again obtained by a call to \texttt{postNo()} function. 
+bias $\frac{\hat{N}_{i}-N^{\textrm{Reg}}_{i}}{N^{\textrm{Reg}}} \cdot 100$ for the posterior mean, 
+median and mode estimates, respectively, 
+for all pairs of interval lengths $(u_{M,i}-u_{m,i}, N_{M,i} - N_{m,i})$ and all cells. 
+In our example we will use synthetic data for initial population. The population given from the administrative 
+register for each cell is generated using a Gaussian distribution with a mean of 71 and standard deviartion of 3 while
+the population detected by the MNO is again generated using a Gaussian distribution 
+with a mean of 19 and standard deviartion of 2. These values can be replaced with any real data.
+The values for posterior 
+distribution of the population is again obtained by a call to \texttt{postN0()} function. 
 
 \begin{verbatim}
 library(pestim)
@@ -932,21 +972,49 @@ ggplot(relBias.Mode.df, aes(x = ' ', y = N)) + geom_boxplot() +
            theme(plot.title = element_text(face = 'bold', size = 14, hjust = 0.5))
 \end{verbatim}
 
-The same combinations for distributions used for $f_{1}$ and $f_{2}$ can be done in the case of several cell like in  the case of a single cell. Since this process is straightforward we will not show here each combination.
+
+\begin{figure}
+\centering
+%\includegraphics[scale=0.85]{many-cells-mean.eps}
+\caption{The distribution of the relative bias for the posterior mean.}
+\label{manycellsmean} 	
+\end{figure}
+
+\begin{figure}
+\centering
+%\includegraphics[scale=0.85]{many-cells-median.eps}
+\caption{The distribution of the relative bias for the posterior median.}
+\label{manycellsmedian} 	
+\end{figure}
+
+\begin{figure}
+\centering
+%\includegraphics[scale=0.85]{many-cells-mdoe.eps}
+\caption{The distribution of the relative bias for the posterior mode.}
+\label{manycellssmode} 	
+\end{figure}
+
+
+The same combinations for distributions used for $f_{1}$ and $f_{2}$ can be done in the case of several cell like in
+the case of a single cell. Since this process is straightforward we will not show here each combination.
 
 
 \section{Estimates along a sequence of time}
 
-In this section we show how to extend the previous estimates along a sequence of time instants. This process is represented in figure \ref{Tool2}.
+In this section we show how to extend the previous estimates along a sequence of time instants. 
+This process is represented in figure \ref{Tool2}.
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[scale=0.35]{Tool2.png}
-	\caption{A diagram of the estimation process for the target population using mobile phone and official population data at a sequence of time instants.}
+	\caption{A diagram of the estimation process for the target population using mobile phone and official 
+		population data at a sequence of time instants.}
 	\label{Tool2} 
 \end{figure}
 
-As input data for the final inference stage we used the number of individuals $N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})$ moving from territorial cell $i$ to cell $j$ in the time interval $(t_{0}, t_{n})$ according to the MNO. These data will be combined with official data and at the end we will  provide the following outputs:
+As input data for the final inference stage we used the number of individuals $N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})$ moving 
+from territorial cell $i$ to cell $j$ in the time interval $(t_{0}, t_{n})$ according to the MNO. These data will be combined 
+with official data and at the end we will  provide the following outputs:
 
 \begin{itemize}
 	\item the probability distribution of actual individuals in each territorial cell $i$ at the initial time $t_{0}$;
@@ -956,11 +1024,17 @@ As input data for the final inference stage we used the number of individuals $N
 We make two prior assumptions:
 
 \begin{enumerate}
-	\item To combine both aggregated mobile phone and official data we assume that a given time instant $t_{0}$ both population figures in each territorial cell can be equated to some extent. For simplicity we will take $N_{i}^{\textrm{Reg}}$ as a fixed quantity without a prior distribution representing uncertainty in its knowledge. Therefore $N_{i}^{\textrm{Reg}}$ will be fixed external parameters in the model. 
-	\item The movements of individuals from one cell to another cell is assumed to be independent of being subscribers of a given MNO or another.
+	\item To combine both aggregated mobile phone and official data we assume that a given time instant $t_{0}$ 
+	both population figures in each territorial cell can be equated to some extent. For simplicity we will take $N_{i}^{\textrm{Reg}}$ 
+	as a fixed quantity without a prior distribution representing uncertainty in its knowledge. 
+	Therefore $N_{i}^{\textrm{Reg}}$ will be fixed external parameters in the model. 
+	\item The movements of individuals from one cell to another cell is assumed to be independent of 
+	being subscribers of a given MNO or another.
 \end{enumerate}
 
-The following hierchical model supports these hypotheses. Let $p_{ij}(t_{0}, t_{n})$ denote the probability for an individual to move from cell $i$ to cell $j$ in the time interval $(t_{0}, t_{n})$. Let $N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})$ the number of individuals moving from cell $i$ to cell $j$ according to the network. We denote $N_{i\cdot}^{\textrm{MNO}}(t_{0})=\sum_{j=1}^{I}N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})$. 
+The following hierchical model supports these hypotheses. Let $p_{ij}(t_{0}, t_{n})$ denote the probability 
+for an individual to move from cell $i$ to cell $j$ in the time interval $(t_{0}, t_{n})$. Let $N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})$ the 
+number of individuals moving from cell $i$ to cell $j$ according to the network. We denote $N_{i\cdot}^{\textrm{MNO}}(t_{0})=\sum_{j=1}^{I}N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})$. 
 
 \begin{subequations}
 	\begin{align}
@@ -979,35 +1053,58 @@ The following hierchical model supports these hypotheses. Let $p_{ij}(t_{0}, t_{
 
 \begin{itemize}
 	\item $[\cdot]$ denotes the nearest integer function;
-	\item $f_{\alpha ij}$ is the probability density function of the parameters $\alpha_{ij}$. The notation $f_{\alpha ij}\left(\alpha_{ij}; \frac{N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})}{N_{i\cdot}^{\textrm{MNO}}(t_{0})}\right)$ is meant to indicate that $\frac{N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})}{N_{i\cdot}^{\textrm{MNO}}(t_{0})}$ should be taken as the mode of the density function;
+	\item $f_{\alpha ij}$ is the probability density function of the parameters $\alpha_{ij}$. The 
+	notation $f_{\alpha ij}\left(\alpha_{ij}; \frac{N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})}{N_{i\cdot}^{\textrm{MNO}}(t_{0})}\right)$ is meant to 
+	indicate that $\frac{N_{ij}^{\textrm{MNO}}(t_{0}, t_{n})}{N_{i\cdot}^{\textrm{MNO}}(t_{0})}$ should be taken as the mode of the density function;
 	\item $f_{ui}$ is the probability density function of the parameter $u$ in cell $i$ with mode $\frac{N_{i}^{\textrm{MNO}}(t_{0})}{N_{i}^{\textrm{REG}}(t_{0})}$;
 	\item $f_{vi}$ isr the probability density function of the parameter $v$  in cell $i$ with mode $N_{i}^{\textrm{REG}}(t_{0})$;
 	\item $f_{\lambda i}$ is the probability density function of the parameter $\lambda$ in cell $i$ with mode $N_{i}^{\textrm{REG}}(t_{0})$. 
 \end{itemize}
 
 
-Equations \eqref{eq:Model1Ini} to \eqref{eq:Model1Fin} add time dependence to the model described in section \ref{model}. Equations \eqref{eq:Model2Ini}, \eqref{eq:Model2Mid}, \eqref{eq:Model2Fin} take care of the time evolution of the estimates.
+Equations \eqref{eq:Model1Ini} to \eqref{eq:Model1Fin} add time dependence to the model described 
+in section \ref{model}. Equations \eqref{eq:Model2Ini}, \eqref{eq:Model2Mid}, \eqref{eq:Model2Fin} 
+take care of the time evolution of the estimates.
 
-Equation \eqref{eq:Model2Ini} states that the number of individuals in a cell $i$ at time $t_{n}$ equals the initial number of individuals plus those arriving from other cells in the given time interval minus those leaving for other cells in the same time interval. The number of individuals arriving and leaving are estimated using the transition probability among cells.
+Equation \eqref{eq:Model2Ini} states that the number of individuals in a cell $i$ at time $t_{n}$ equals 
+the initial number of individuals plus those arriving from other cells in the given time interval minus those 
+leaving for other cells in the same time interval. The number of individuals arriving and leaving 
+are estimated using the transition probability among cells.
 
-We modelled these transition probabilities for a given cell $i$ as a multivariate random variable with a Dirichlet distribution with parameters $\alpha_{i1},\dots,\alpha_{iI}$ (in fact, Dirichlet distributions are commonly used as prior distributions in Bayesian statistics). These parameters  are given unimodal prior distributions $f_{\alpha_{ij}}$ with mode in $\frac{N_{ij}^{\textrm{MNO}}}{N_{i\cdot}^{\textrm{MNO}}}$ according to our second working assumption.
+We modelled these transition probabilities for a given cell $i$ as a multivariate random variable with 
+a Dirichlet distribution with parameters $\alpha_{i1},\dots,\alpha_{iI}$ (in fact, Dirichlet distributions 
+are commonly used as prior distributions in Bayesian statistics). These parameters  are given unimodal 
+prior distributions $f_{\alpha_{ij}}$ with mode in $\frac{N_{ij}^{\textrm{MNO}}}{N_{i\cdot}^{\textrm{MNO}}}$ according to 
+our second working assumption.
 
-The computation of the probability functions $\mathbb{P}\left(N_{i}(t_{n})\big|N^{\textrm{MNO}}(t_{0}, t_{1})\right)$ for each cell $i$ will allow us to choose an estimator as, e.g., the posterior mean, posterior median or posterior mode. The computation is conducted empirically in three steps:
+The computation of the probability functions $\mathbb{P}\left(N_{i}(t_{n})\big|N^{\textrm{MNO}}(t_{0}, t_{1})\right)$ for 
+each cell $i$ will allow us to choose an estimator as, e.g., the posterior mean, posterior median or 
+posterior mode. The computation is conducted empirically in three steps:
 
 \begin{enumerate}
-	\item The initial population value $N_{i}(t_{0})$ is generated for all cells $i=1,\dots, I$ according to the model using $N_{i\cdot}^{\textrm{MNO}}(t_{0})$ as input data and choosing weakly informative priors $f_{ui}$, $f_{vi}$ and $f_{\lambda i}$.
-	\item A transition probability matrix $[p_{ij}(t_{0}, t_{n})]$ is generated according to the model using $N^{\textrm{MNO}}(t_{0}, t_{n})$ as input data and choosing weakly informative priors $f_{\alpha ij}$.
+	\item The initial population value $N_{i}(t_{0})$ is generated for all cells $i=1,\dots, I$ according to the 
+	model using $N_{i\cdot}^{\textrm{MNO}}(t_{0})$ as input data and choosing weakly informative priors $f_{ui}$, $f_{vi}$ and $f_{\lambda i}$.
+	\item A transition probability matrix $[p_{ij}(t_{0}, t_{n})]$ is generated according to the 
+	model using $N^{\textrm{MNO}}(t_{0}, t_{n})$ as input data and choosing weakly informative priors $f_{\alpha ij}$.
 	\item These generated quantities are used in formula \eqref{eq:Model2Ini} to generate $N_{i}(t_{1})$ for all cells $i=1,\dots,I$.
 \end{enumerate}
 
-Following these steps we can generate an empirical posterior distribution of values $N_{i}(t_{n})$ for each cell $i$. Then we can use these distributions to provide a point estimate according to its mean, median, or mode.
+Following these steps we can generate an empirical posterior distribution of values 
+$N_{i}(t_{n})$ for each cell $i$. Then we can use these distributions to provide a point estimate 
+according to its mean, median, or mode.
 
 
 \section{An example how to estimate population at a sequence of time instants}
 
-In this example we will consider a territory divided into $12$ cells. At $4$ succesive time intervals the individuals follow their own trajectories so that the population in each cell evolves according to actual transition matrices $N_{ij}(t_{n-1}, t_{n})$, $n=1,2,3,4$. At the initial time instant $t_{0}$ we also have the population register figures for each cell $N_{i}^{\textrm{Reg}}(t_{0})$ which can be equated to the initial real population $N_{i}(t_{0})$, although they are not completely equal due to nonsampling errors.
+In this example we will consider a territory divided into $12$ cells. At $4$ succesive time intervals 
+the individuals follow their own trajectories so that the population in each cell evolves according to 
+actual transition matrices $N_{ij}(t_{n-1}, t_{n})$, $n=1,2,3,4$. At the initial time instant $t_{0}$ we 
+also have the population register figures for each cell $N_{i}^{\textrm{Reg}}(t_{0})$ which can 
+be equated to the initial real population $N_{i}(t_{0})$, although they are not completely 
+equal due to nonsampling errors.
 
-We also generate the transition matrices for each time interval $n=1,2,3,4$ for the individuals $N_{ij}^{\textrm{MNO}}(t_{n-1}, t_{n})$ detected with the network.
+We also generate the transition matrices for each time interval $n=1,2,3,4$ for the i
+ndividuals $N_{ij}^{\textrm{MNO}}(t_{n-1}, t_{n})$ detected with the network.
 
 \texttt{pestim} contains a dataset \texttt{MobPop} that provides population counts moving from 
 each pair of cells at succesive time instants for a simulated true population, a corresponding official
@@ -1016,13 +1113,15 @@ are actually stored in a \texttt{data.table} with the following columns:
 \begin{itemize}
 \item ID\_CELL\_INI - identification code for each initial cell in the displacements;
 \item ID\_CELL\_END - identification code for each final cell in the displacements;
-\item ID\_T - identification code of each time moment. It is very important to underline that the table collects always displacements between the initial time instant and the corresponding time instant specified by ID\_T;
+\item ID\_T - identification code of each time moment. It is very important to underline that the 
+table collects always displacements between the initial time instant and the corresponding time instant specified by ID\_T;
 \item N\_REG - counts according to the population register. Note that these counts do not evolve in time;
 \item N\_0 - counts of the simulated true population;
 \item N\_MNO\_1 - counts of individuals detected by the Mobile Network Operator
 \end{itemize}
 
-We will use these data in our examples. Firstly, we generate the estimates $N_{i}(t_{0})$ for the initial time instant, as we  did in the previous section.
+We will use these data in our examples. Firstly, we generate the estimates $N_{i}(t_{0})$ for the 
+initial time instant, as we  did in the previous section.
 
 \begin{verbatim}
 library(pestim)
@@ -1068,9 +1167,14 @@ ggplot(N0cells, aes(x = N0)) +
 The actual estimation is done using \texttt{rN0()} function.
 
 
-Now we can provide two kind of time evolutions for the population in each cell. On the one hand, we can generate simulated populations conditioned upon their estimated initial size $\widehat{N}_{i}(t_{0})$. On the other hand, we can provide these simulated populations unconditioned upon their estimated initial size but starting from the input data themselves (thus uncertainty in the initial population estimate is included).
+Now we can provide two kind of time evolutions for the population in each cell. On the one hand, 
+we can generate simulated populations conditioned upon their estimated initial size $\widehat{N}_{i}(t_{0})$. 
+On the other hand, we can provide these simulated populations unconditioned upon their estimated 
+initial size but starting from the input data themselves (thus uncertainty in the initial population estimate is included).
 
-In the first case, taking the mean of the preceding populations as estimates for the initial population of each cell we obtain the following evolving simulated populations in each cell (in dashed lines the assumed true values of the simulated population):
+In the first case, taking the mean of the preceding populations as estimates for the initial population 
+of each cell we obtain the following evolving simulated populations in each cell (in dashed lines the 
+assumed true values of the simulated population):
 
 \begin{verbatim}
 N0 <- N0cells[, list(Mean = round(mean(N0))), by = 'cellID'][['Mean']]
@@ -1110,10 +1214,17 @@ ggplot(NtcondN0, aes(x = N0, fill = Time)) +
           axis.text.y = element_blank())  
 \end{verbatim}
 
-In this code, \texttt{rNtcondN0()} function generates the random values for $N_{t}$ (the posterior distribution) conditional on initial population count. This function uses \texttt{rmatProb()}  to generate the transition probabilities according to a Dirichlet distribution with parameters generated by \texttt{alphaPrior()}. 
-These parameters are generated with distributions whose names are taken from the input parameter \texttt{distNames} and construct the corresponding prior distribution for each cell $j$ with mode at $u_{j}^{*}=N_{j}$. The rest of parameters of the distribution are computed according to the dispersion parameters specified in \texttt{variation}.
+In this code, \texttt{rNtcondN0()} function generates the random values for $N_{t}$ (the posterior 
+distribution) conditional on initial population count. This function uses \texttt{rmatProb()}  to generate 
+the transition probabilities according to a Dirichlet distribution with parameters generated by \texttt{alphaPrior()}. 
+These parameters are generated with distributions whose names are taken from the input 
+parameter \texttt{distNames} and construct the corresponding prior distribution for each cell $j$ with 
+mode at $u_{j}^{*}=N_{j}$. The rest of parameters of the distribution are computed according to the 
+dispersion parameters specified in \texttt{variation}.
 
-By comparing both figures we can detect how the uncertainty in the estimation of the initial population size propagates along the evolving estimates of the population size of each cell. In cells 6 and 7 we can observe how the uncertainty in the simulated initial populations provide rather inaccurate estimates for later time periods. 
+By comparing both figures we can detect how the uncertainty in the estimation of the initial population 
+size propagates along the evolving estimates of the population size of each cell. In cells 6 and 7 we can 
+observe how the uncertainty in the simulated initial populations provide rather inaccurate estimates for later time periods. 
 
 Using the posterior mean as estimator of the population in each cell, we have the following time evolutions:
 
@@ -1159,7 +1270,9 @@ In terms of the relative bias, this comparison can be depicted as follows:
              axis.text.y = element_text(size = 5), legend.position="none")
  \end{verbatim}
  
-We can also produce estimates unconditioned on the initial estimate of the population in each cell. The uncertainty in the estimation of the initial population of each cell is incorporated into the estimation process for later time periods.
+We can also produce estimates unconditioned on the initial estimate of the population in each cell. 
+The uncertainty in the estimation of the initial population of each cell is incorporated into the estimation 
+process for later time periods.
  
 \begin{verbatim}
 nT <- length(unique(MobPop$ID_T)) - 1
@@ -1267,7 +1380,8 @@ American Mathematical Monthly 109, pp. 217-234, March, 2002.
 
 
 \bibitem{hyper}
-~Pearson, J.W., ~Olver, S., Porter, A.M., Numerical methods for the computation of the confluent and Gauss hypergeometric functions, Numerical Algorithms 74(3), August, 2016.
+~Pearson, J.W., ~Olver, S., Porter, A.M., Numerical methods for the computation of the confluent and Gauss 
+hypergeometric functions, Numerical Algorithms 74(3), August, 2016.
 
 \bibitem{Q2016}
 ~De Meersman, F., ~Seynaeve, G., ~Debusschere, M., ~Lusyne, P., ~Dewitte, P., 
