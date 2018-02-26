@@ -1278,6 +1278,7 @@ The results of the time evolution are depicted in figure \ref{time3}. In terms o
 	\label{time3} 	
 \end{figure}
  
+ 
  \begin{verbatim}
  seriesNt.dcast <- dcast(seriesNt, Time + Cell ~ Series, value.var = 'Population')
  seriesNt.dcast[, relBias := round((N - trueN) / trueN * 100, 2)][, (c('N', 'trueN')) := NULL]
@@ -1292,6 +1293,13 @@ The results of the time evolution are depicted in figure \ref{time3}. In terms o
              theme(plot.title = element_text(face = 'bold', size = 12, hjust = 0.5), 
              axis.text.y = element_text(size = 5), legend.position="none")
  \end{verbatim}
+ 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.85]{time4.eps}
+	\caption{Estimated population for each cell conditioned on initial population for 4 time instants}
+	\label{time4} 	
+\end{figure}
  
 We can also produce estimates unconditioned on the initial estimate of the population in each cell. 
 The uncertainty in the estimation of the initial population of each cell is incorporated into the estimation 
