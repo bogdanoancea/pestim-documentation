@@ -75,7 +75,8 @@ Examples of these functions are \texttt{postN0, postNt, postNtcondN0}.
 \end{itemize}
 
 \texttt{pestim} package is freely available under the \texttt{GPL3} and \texttt{EUPL} lincese 
-at the following address: \url{https://github.com/MobilePhoneESSnetBigData/pestim}. 
+at the following address: \url{https://github.com/MobilePhoneESSnetBigData/pestim}. It requires 
+at least R version 3.3.0, but upgrading R to the newst version is highly recommended.
 It can be installed using \texttt{install\_github()} function from \texttt{devtools} package:
 \begin{verbatim}
 library(devtools)
@@ -1098,10 +1099,12 @@ according to its mean, median, or mode.
 
 In this example we will consider a territory divided into $12$ cells. At $4$ succesive time intervals 
 the individuals follow their own trajectories so that the population in each cell evolves according to 
-actual transition matrices $N_{ij}(t_{n-1}, t_{n})$, $n=1,2,3,4$. At the initial time instant $t_{0}$ we 
+actual transition matrices $N_{ij}(t_{n-1}, t_{n})$, $n=1,2,3,4$. 
+We kept the number of cells and time intervals small to obtain a reasonable running time.
+At the initial time instant $t_{0}$ we 
 also have the population register figures for each cell $N_{i}^{\textrm{Reg}}(t_{0})$ which can 
 be equated to the initial real population $N_{i}(t_{0})$, although they are not completely 
-equal due to nonsampling errors.
+equal due to nonsampling errors. 
 
 We also generate the transition matrices for each time interval $n=1,2,3,4$ for the 
 individuals $N_{ij}^{\textrm{MNO}}(t_{n-1}, t_{n})$ detected with the network.
@@ -1158,19 +1161,20 @@ ggplot(N0cells, aes(x = N0)) +
            facet_grid(factor(cellID) ~ ., scales="free") +
            xlab('Posterior populations per cell') + 
            ylab('Counts (different scales)\n') +
-           ggtitle(paste0('Simulated posterior populations for each cell\n')) +
            theme(plot.title = element_text(face = 'bold', size = 14, 
            hjust = 0.5), axis.text.y =
            element_blank())
 \end{verbatim}
 
-The actual estimation is done using \texttt{rN0()} function. The results are presented in figure \ref{time1}.
+The actual estimation is done using \texttt{rN0()} function which generates a series of random points according to the posterior probability distribution of the number of individuals . The results are presented in figure \ref{time1}. This simulation
+was run under Linux and Mac OS X environments succesfully. Under Windows it may be possible to get a memory allocation error.
+In this case the value of the variable $nSim$ should be decreased. 
 
 \begin{figure}
-	\centering
-	\includegraphics[scale=0.85]{}time1.eps}
-	\caption{Simulated posterior populations for each cell.}
-	\label{time1} 	
+\centering
+\includegraphics[scale=0.85]{time1.eps}
+\caption{Simulated posterior populations for each cell.}
+\label{time1} 	
 \end{figure}
 
 
@@ -1227,7 +1231,14 @@ the transition probabilities according to a Dirichlet distribution with paramete
 These parameters are generated with distributions whose names are taken from the input 
 parameter \texttt{distNames} and construct the corresponding prior distribution for each cell $j$ with 
 mode at $u_{j}^{*}=N_{j}$. The rest of parameters of the distribution are computed according to the 
-dispersion parameters specified in \texttt{variation}.
+dispersion parameters specified in \texttt{variation}. The results are presented in figure \ref{time2}
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.85]{time2.eps}
+	\caption{Simulated posterior populations for each cell conditioned on initial population.}
+	\label{time2} 	
+\end{figure}
 
 By comparing both figures we can detect how the uncertainty in the estimation of the initial population 
 size propagates along the evolving estimates of the population size of each cell. In cells 6 and 7 we can 
@@ -1250,17 +1261,22 @@ ggplot(seriesNt, aes(x = Time, y = Population, color = Series, group = Series)) 
            geom_line() + 
            facet_grid(factor(Cell) ~ ., scales="free") +
            scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) +
-           xlab('\n Time Period') + 
+           xlab('') + 
            ylab('Population (different scales; watch out the origins)\n') +
-           ggtitle(paste0('Estimated populations for each cell\n 
-           (Conditioned on initial population)')) +
            scale_color_manual(labels = c(expression(widehat(N)), 
            expression(N^{(0)})), values = c('red', 'blue')) +
            theme(plot.title = element_text(face = 'bold', size = 14, hjust = 0.5), 
            axis.text.y = element_text(size = 5))
 \end{verbatim}
- 
-In terms of the relative bias, this comparison can be depicted as follows:
+
+The results of the time evolution are depicted in figure \ref{time3}. In terms of the relative bias, this comparison is presented in figure \ref{time4}.
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.85]{time3.eps}
+	\caption{Estimated population for each cell conditioned on initial population for 4 time instants}
+	\label{time3} 	
+\end{figure}
  
  \begin{verbatim}
  seriesNt.dcast <- dcast(seriesNt, Time + Cell ~ Series, value.var = 'Population')
